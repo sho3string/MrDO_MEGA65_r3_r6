@@ -57,7 +57,7 @@ begin
          CLKOUT0_PHASE        => 0.000,
          CLKOUT0_DUTY_CYCLE   => 0.500,
          CLKOUT0_USE_FINE_PS  => FALSE,
-         CLKOUT1_DIVIDE       => 29,         -- 980 MHz / 20 = 49 MHz
+         CLKOUT1_DIVIDE       => 20,         -- 980 MHz / 20 = 49 MHz
          CLKOUT1_PHASE        => 0.000,
          CLKOUT1_DUTY_CYCLE   => 0.500,
          CLKOUT1_USE_FINE_PS  => FALSE         
