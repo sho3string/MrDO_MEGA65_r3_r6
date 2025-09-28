@@ -85,6 +85,9 @@ port (
    -- Video Clock Domain
    --------------------------------------------------------------------------------------------------------
 
+   clk_98M_o               : out std_logic;
+   clk_98M_rst_o           : out std_logic;
+  
    video_clk_o             : out std_logic;
    video_rst_o             : out std_logic;
    video_ce_o              : out std_logic;
@@ -104,8 +107,8 @@ port (
    clk_i                   : in  std_logic;              -- 100 MHz clock
 
    -- Share clock and reset with the framework
-   main_clk_o              : out std_logic;              -- CORE's 54 MHz clock
-   main_rst_o              : out std_logic;              -- CORE's reset, synchronized
+   clk_sys_o               : out std_logic;              -- Core's clock
+   clk_sys_rst_o           : out std_logic;              -- Core's reset synchronized
    
 
    -- M2M's reset manager provides 2 signals:
@@ -225,11 +228,11 @@ architecture synthesis of MEGA65_Core is
 -- Clocks and active high reset signals for each clock domain
 ---------------------------------------------------------------------------------------------
 
-signal main_clk            : std_logic;               -- Core main clock
-signal main_rst            : std_logic;
+signal clk_sys             : std_logic;               -- Core main clock
+signal clk_sys_rst         : std_logic;
 
-signal video_clk           : std_logic;               
-signal video_rst           : std_logic;
+signal clk_98M             : std_logic;               
+signal clk_98M_rst         : std_logic;
 
 ---------------------------------------------------------------------------------------------
 -- main_clk (MiSTer core's clock)
@@ -311,12 +314,14 @@ constant C_MENU_NAMCO_DSWA_7  : natural := 78;
 
 
 -- Galaga specific video processing
-signal div                    : std_logic_vector(2 downto 0);
-signal dim_video              : std_logic;
-signal dsw_a_i                : std_logic_vector(7 downto 0);
-signal dsw_b_i                : std_logic_vector(7 downto 0);
+signal div          : std_logic_vector(2 downto 0);
+signal dim_video    : std_logic;
+signal dsw_a_i      : std_logic_vector(7 downto 0);
+signal dsw_b_i      : std_logic_vector(7 downto 0);
 
-signal video_ce     : std_logic;
+signal old_clk      : std_logic;
+signal ce_vid       : std_logic;
+signal ce_pix       : std_logic;
 signal video_red    : std_logic_vector(7 downto 0);
 signal video_green  : std_logic_vector(7 downto 0);
 signal video_blue   : std_logic_vector(7 downto 0);
@@ -350,13 +355,13 @@ signal qnice_dn_wr      : std_logic;
 
 -- 320x288 @ 50 Hz
 constant C_320_288_50 : video_modes_t := (
-   CLK_KHZ     => 6000,       -- 6 MHz
+   CLK_KHZ     => 4900,       -- 4.9 MHz
    CLK_SEL     => "001",
    CEA_CTA_VIC => 0,
    ASPECT      => "01",       -- aspect ratio: 01=4:3, 10=16:9: "01" for SVGA
    PIXEL_REP   => '0',        -- no pixel repetition
    H_PIXELS    => 320,        -- horizontal display width in pixels
-   V_PIXELS    => 288,        -- vertical display width in rows
+   V_PIXELS    => 240,        -- vertical display width in rows
    H_PULSE     => 28,         -- horizontal sync pulse width in pixels
    H_BP        => 28,         -- horizontal back porch width in pixels
    H_FP        => 8,          -- horizontal front porch width in pixels
@@ -436,11 +441,11 @@ begin
    clk_gen : entity work.clk
       port map (
          sys_clk_i         => clk_i,           -- expects 100 MHz
-         main_clk_o        => main_clk,        -- Galaga's 18 MHz main clock
-         main_rst_o        => main_rst,        -- Galaga's reset, synchronized
+         clk_sys_o         => clk_sys,         -- Main clock and video clock
+         clk_sys_rst_o     => clk_sys_rst,     -- reset, synchronized
          
-         video_clk_o       => video_clk,       -- video clock 48 MHz
-         video_rst_o       => video_rst        -- video reset, synchronized
+         clk_98M_o         => clk_98M,         -- 49 MHz
+         clk_98M_rst_o     => clk_98M_rst
       ); -- clk_gen
    
     i_cdc_qnice2video : xpm_cdc_array_single
@@ -450,14 +455,19 @@ begin
       port map (
          src_clk           => qnice_clk_i,
          src_in(0)         => qnice_osm_control_i(C_MENU_ROT90),
-         dest_clk          => video_clk,
+         dest_clk          => clk_sys,
          dest_out(0)       => video_rot90_flag
       ); -- i_cdc_qnice2video
 
-   main_clk_o  <= main_clk;
-   main_rst_o  <= main_rst;
-   video_clk_o <= video_clk;
-   video_rst_o <= video_rst;
+   -- core clocks
+   clk_sys_o      <= clk_sys;
+   clk_sys_rst_o  <= clk_sys_rst;
+   clk_98M_o      <= clk_98M;
+   clk_98M_rst_o  <= clk_98M_rst;
+   
+   -- video clocks
+   video_clk_o    <= clk_sys;
+   video_rst_o    <= clk_sys_rst;
    
    dsw_a_i <= main_osm_control_i(C_MENU_MIDWAY_DSWA_7) &
               main_osm_control_i(C_MENU_MIDWAY_DSWA_6) &
@@ -511,7 +521,8 @@ begin
          G_VDNUM              => C_VDNUM
       )
       port map (
-         clk_main_i           => main_clk,
+         clk_sys_i            => clk_sys,
+         clk_98M_i            => clk_98M,
          reset_soft_i         => main_reset_core_i,
          reset_hard_i         => main_reset_m2m_i,
          pause_i              => main_pause_core_i and main_osm_control_i(C_MENU_OSMPAUSE),
@@ -520,7 +531,7 @@ begin
          
          -- Video output
          -- This is PAL 720x576 @ 50 Hz (pixel clock 27 MHz), but synchronized to main_clk (54 MHz).
-         video_ce_o           => open,
+         video_ce_o           => ce_vid,
          video_ce_ovl_o       => open,
          video_red_o          => main_video_red,
          video_green_o        => main_video_green,
@@ -564,16 +575,20 @@ begin
          dsw_b_i              => dsw_b_i
       ); -- i_main
       
-    process (video_clk) -- 48 MHz
+    process (clk_sys) -- 49 MHz
     begin
-        if rising_edge(video_clk) then
-            video_ce       <= '0';
+        if rising_edge(clk_sys) then
+            --video_ce       <= '0';
             video_ce_ovl_o <= '0';
 
-            div <= std_logic_vector(unsigned(div) + 1);
-            if div="000" then
-               video_ce <= '1'; -- 6 MHz
-            end if;
+            --div <= std_logic_vector(unsigned(div) + 1);
+            --if div="000" then
+            --   video_ce <= '1'; -- 6 MHz
+            --end if;
+            
+            old_clk <= ce_vid;
+            ce_pix  <= old_clk and (not ce_vid);
+            
             if div(0) = '1' then
                video_ce_ovl_o <= '1'; -- 24 MHz
             end if;
@@ -588,7 +603,7 @@ begin
                 video_blue  <= main_video_blue  & main_video_blue  & main_video_blue & main_video_blue;
             end if;
 
-            video_hs     <= not main_video_hs;
+            video_hs     <= main_video_hs;
             video_vs     <= main_video_vs;
             video_hblank <= main_video_hblank;
             video_vblank <= main_video_vblank;
@@ -606,7 +621,7 @@ begin
            video_hs_o       <= video_rot_hs;
            video_hblank_o   <= video_rot_hblank;
            video_vblank_o   <= video_rot_vblank;
-           video_ce_o       <= video_ce;
+           video_ce_o       <= ce_pix;
        else
            video_red_o      <= video_red;
            video_green_o    <= video_green;
@@ -615,7 +630,7 @@ begin
            video_hs_o       <= video_hs;
            video_hblank_o   <= video_hblank;
            video_vblank_o   <= video_vblank;
-           video_ce_o       <= video_ce;           
+           video_ce_o       <= ce_pix;           
        end if;
     end process;
     
@@ -623,8 +638,8 @@ begin
     i_screen_rotate : entity work.screen_rotate
        port map (
           --inputs
-          CLK_VIDEO      => video_clk,
-          CE_PIXEL       => video_ce,
+          CLK_VIDEO      => clk_sys,
+          CE_PIXEL       => ce_pix,
           VGA_R          => video_red,
           VGA_G          => video_green,
           VGA_B          => video_blue,
@@ -638,7 +653,7 @@ begin
           FB_LL          => '0',
           -- output to screen_buffer
           video_rotated  => open,
-          DDRAM_CLK      => video_clk,
+          DDRAM_CLK      => clk_sys,
           DDRAM_BUSY     => '0',
           DDRAM_BURSTCNT => open,
           DDRAM_ADDR     => ddram_addr,
@@ -650,22 +665,22 @@ begin
 
     -- Here G_ADDR_WIDTH is determined by the total number of visible pixels,
    -- since each word in memory stores one pixel.
-   -- Here we have 288*224 = 64512, i.e. 16 bits of address is enough.
+   -- Here we have 240*192 = 46,080, i.e. 16 bits of address is enough.
    i_frame_buffer : entity work.frame_buffer
       generic map (
          G_ADDR_WIDTH => 16,
-         G_H_LEFT     => 48,
-         G_H_RIGHT    => 224+48,
+         G_H_LEFT     => 64,
+         G_H_RIGHT    => 192+64, -- 320 - 192 /2 = 64 left & right
          G_VIDEO_MODE => C_320_288_50
       )
       
       port map (
-         ddram_clk_i      => video_clk,
+         ddram_clk_i      => clk_sys,
          ddram_addr_i     => ddram_addr(14 downto 0) & ddram_be(7),
          ddram_din_i      => ddram_data(31 downto 0),
          ddram_we_i       => ddram_we,
-         video_clk_i      => video_clk,
-         video_ce_i       => video_ce,
+         video_clk_i      => clk_sys,
+         video_ce_i       => ce_pix,
          video_red_o      => video_rot_red,
          video_green_o    => video_rot_green,
          video_blue_o     => video_rot_blue,
