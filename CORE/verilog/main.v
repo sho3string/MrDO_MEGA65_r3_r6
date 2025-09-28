@@ -208,7 +208,7 @@ module main #(
         .b(rgb_comp[3:0]),
         .user_button(b_pause),
         .pause_request(hs_pause),
-        .options(~status[26:25]),
+        .options(options),
         .rgb_out({video_red_o,video_green_o,video_blue_o})
     );
 
@@ -222,9 +222,10 @@ module main #(
         p1 <= ~{ 1'b0, b_start2, b_start1, b_fire, b_up, b_right, b_down, b_left };
         p2 <= ~{ b_coin, 1'b0, 1'b0, b_fire_2, b_up_2, b_right_2, b_down_2, b_left_2 };
         
-        dsw1 <= dsw_a_i;
-        dsw2 <= dsw_b_i;
-        
+        //if(reset == 0) begin
+            dsw1 <= dsw_a_i;
+            dsw2 <= dsw_b_i;
+        //end
         user_flip <= flip_screen;
     end
     

@@ -327,7 +327,7 @@ constant OPTM_SIZE         : natural := 56;  -- amount of items including empty 
 -- Net size of the Options menu on the screen in characters (excluding the frame, which is hardcoded to two characters)
 -- Without submenus: Use OPTM_SIZE as height, otherwise count how large the actually visible main menu is.
 constant OPTM_DX           : natural := 23;
-constant OPTM_DY           : natural := 19;
+constant OPTM_DY           : natural := 21;
 
 constant OPTM_ITEMS        : string :=
    " MrDo - Universal\n"    &
@@ -417,29 +417,9 @@ constant OPTM_G_DSWA4      : integer := 19;
 constant OPTM_G_DSWA5      : integer := 20;
 constant OPTM_G_DSWA6      : integer := 21;
 constant OPTM_G_DSWA7      : integer := 22;
-constant OPTM_G_FLIPJ             : integer := 23;
-constant OPTM_G_SOFTW             : integer := 24;
-
--- Namco DIPS --
--- Dipswitch B
-constant OPTM_G_NAMCO_DSWB0       : integer := 25;
-constant OPTM_G_NAMCO_DSWB1       : integer := 26;
-constant OPTM_G_NAMCO_DSWB2       : integer := 27;
-constant OPTM_G_NAMCO_DSWB3       : integer := 28;
-constant OPTM_G_NAMCO_DSWB4       : integer := 29;
-constant OPTM_G_NAMCO_DSWB5       : integer := 30;
-constant OPTM_G_NAMCO_DSWB6       : integer := 31;
-constant OPTM_G_NAMCO_DSWB7       : integer := 32;
--- Dipswitch A
-constant OPTM_G_NAMCO_DSWA0       : integer := 33;
-constant OPTM_G_NAMCO_DSWA1       : integer := 34;
-constant OPTM_G_NAMCO_DSWA2       : integer := 35;
-constant OPTM_G_NAMCO_DSWA3       : integer := 36;
-constant OPTM_G_NAMCO_DSWA4       : integer := 37;
-constant OPTM_G_NAMCO_DSWA5       : integer := 38;
-constant OPTM_G_NAMCO_DSWA6       : integer := 39;
-constant OPTM_G_NAMCO_DSWA7       : integer := 40;
-constant OPTM_G_VGA_MODES         : integer := 41;
+constant OPTM_G_FLIPJ      : integer := 23;
+constant OPTM_G_SOFTW      : integer := 24;
+constant OPTM_G_VGA_MODES  : integer := 25;
 
 -- !!! DO NOT TOUCH !!!
 type OPTM_GTYPE is array (0 to OPTM_SIZE - 1) of integer range 0 to 2**OPTM_GTC- 1;
@@ -490,7 +470,7 @@ constant OPTM_GROUPS       : OPTM_GTYPE := ( OPTM_G_TEXT + OPTM_G_HEADLINE,     
                                              OPTM_G_DSWB5  + OPTM_G_SINGLESEL,                   -- Rack Test
                                              OPTM_G_DSWB6  + OPTM_G_SINGLESEL,                   -- Unused
                                              OPTM_G_DSWB7  + OPTM_G_SINGLESEL,                   -- Cabinet
-                                             OPTM_G_LINE,                                               -- Line
+                                             OPTM_G_LINE,                                        -- Line
                                              OPTM_G_DSWA0  + OPTM_G_SINGLESEL,                   -- Coinage A \
                                              OPTM_G_DSWA1  + OPTM_G_SINGLESEL,                   -- Coinage B  |
                                              OPTM_G_DSWA2  + OPTM_G_SINGLESEL  + OPTM_G_STDSEL,  -- Coinage C / 
