@@ -153,8 +153,9 @@ constant C_DEV_R8           : std_logic_vector(15 downto 0) := x"0106";
 constant C_DEV_N8           : std_logic_vector(15 downto 0) := x"0107";
 constant C_DEV_H5           : std_logic_vector(15 downto 0) := x"0108";
 constant C_DEV_K5           : std_logic_vector(15 downto 0) := x"0109";
-constant C_DEV_T02          : std_logic_vector(15 downto 0) := x"010A";
-constant C_DEV_F10          : std_logic_vector(15 downto 0) := x"010B";
+constant C_DEV_U02          : std_logic_vector(15 downto 0) := x"010A";
+constant C_DEV_T02          : std_logic_vector(15 downto 0) := x"010B";
+constant C_DEV_F10          : std_logic_vector(15 downto 0) := x"010C";
 
 
 -- Mr Do core specific ROMs
@@ -168,6 +169,7 @@ constant ROM_R8             : string  := "arcade/mrdo/r8-08.bin" & ENDSTR;
 constant ROM_N8             : string  := "arcade/mrdo/n8-07.bin" & ENDSTR;
 constant ROM_H5             : string  := "arcade/mrdo/h5-05.bin" & ENDSTR;
 constant ROM_K5             : string  := "arcade/mrdo/k5-06.bin" & ENDSTR;
+constant ROM_U02            : string  := "arcade/mrdo/u02--2.bin" & ENDSTR;
 constant ROM_T02            : string  := "arcade/mrdo/t02--3.bin" & ENDSTR;
 constant ROM_F10            : string  := "arcade/mrdo/f10--1.bin" & ENDSTR;
 
@@ -181,15 +183,16 @@ constant ROM_R8_START          : std_logic_vector(15 downto 0) := ROM_U8_START +
 constant ROM_N8_START          : std_logic_vector(15 downto 0) := ROM_R8_START + ROM_R8'length;
 constant ROM_H5_START          : std_logic_vector(15 downto 0) := ROM_N8_START + ROM_N8'length;
 constant ROM_K5_START          : std_logic_vector(15 downto 0) := ROM_H5_START + ROM_H5'length;
-constant ROM_T02_START         : std_logic_vector(15 downto 0) := ROM_K5_START + ROM_K5'length;
+constant ROM_U02_START         : std_logic_vector(15 downto 0) := ROM_K5_START + ROM_K5'length;
+constant ROM_T02_START         : std_logic_vector(15 downto 0) := ROM_U02_START + ROM_U02'length;
 constant ROM_F10_START         : std_logic_vector(15 downto 0) := ROM_T02_START + ROM_T02'length;
 
 
 -- M2M framework constants
-constant C_CRTROMS_AUTO_NUM      : natural := 12;                                       -- Amount of automatically loadable ROMs and carts, if more tha    n 3: also adjust CRTROM_MAN_MAX in M2M/rom/shell_vars.asm, Needs to be in sync with config.vhd. Maximum is 16
+constant C_CRTROMS_AUTO_NUM      : natural := 13;                                       -- Amount of automatically loadable ROMs and carts, if more tha    n 3: also adjust CRTROM_MAN_MAX in M2M/rom/shell_vars.asm, Needs to be in sync with config.vhd. Maximum is 16
 constant C_CRTROMS_AUTO_NAMES    : string  := ROM_A4 & ROM_C4 & ROM_E4 & ROM_F4 & 
                                               ROM_S8 & ROM_U8 & ROM_R8 & ROM_N8 &
-                                              ROM_H5 & ROM_K5 & ROM_T02 & ROM_F10 &
+                                              ROM_H5 & ROM_K5 & ROM_U02 & ROM_T02 & ROM_F10 &
                                               ENDSTR;
                                               
 constant C_CRTROMS_AUTO          : crtrom_buf_array := ( 
@@ -203,6 +206,7 @@ constant C_CRTROMS_AUTO          : crtrom_buf_array := (
       C_CRTROMTYPE_DEVICE, C_DEV_N8, C_CRTROMTYPE_MANDATORY, ROM_N8_START,
       C_CRTROMTYPE_DEVICE, C_DEV_H5, C_CRTROMTYPE_MANDATORY, ROM_H5_START,
       C_CRTROMTYPE_DEVICE, C_DEV_K5, C_CRTROMTYPE_MANDATORY, ROM_K5_START,
+      C_CRTROMTYPE_DEVICE, C_DEV_U02,C_CRTROMTYPE_MANDATORY, ROM_U02_START,
       C_CRTROMTYPE_DEVICE, C_DEV_T02,C_CRTROMTYPE_MANDATORY, ROM_T02_START,
       C_CRTROMTYPE_DEVICE, C_DEV_F10,C_CRTROMTYPE_MANDATORY, ROM_F10_START,
                                                          x"EEEE");                     -- Always finish the array using x"EEEE"

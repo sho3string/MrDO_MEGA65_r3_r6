@@ -179,29 +179,29 @@ module main #(
     
     assign video_ce_o = clk_5M;
     
-    wire b_up      = joy_1_up_n_i;
-    wire b_down    = joy_1_down_n_i;
-    wire b_left    = joy_1_left_n_i;
-    wire b_right   = joy_1_right_n_i;
-    wire b_fire    = joy_1_fire_n_i;
+    wire b_up      = ~joy_1_up_n_i;
+    wire b_down    = ~joy_1_down_n_i;
+    wire b_left    = ~joy_1_left_n_i;
+    wire b_right   = ~joy_1_right_n_i;
+    wire b_fire    = ~joy_1_fire_n_i;
    
-    wire b_up_2    = joy_2_up_n_i;
-    wire b_down_2  = joy_2_down_n_i;
-    wire b_left_2  = joy_2_left_n_i;
-    wire b_right_2 = joy_2_right_n_i;
-    wire b_fire_2  = joy_2_fire_n_i;
+    wire b_up_2    = ~joy_2_up_n_i;
+    wire b_down_2  = ~joy_2_down_n_i;
+    wire b_left_2  = ~joy_2_left_n_i;
+    wire b_right_2 = ~joy_2_right_n_i;
+    wire b_fire_2  = ~joy_2_fire_n_i;
     
-    wire b_start1  = keyboard_n[m65_1];
-    wire b_start2  = keyboard_n[m65_2];
-    wire b_coin    = keyboard_n[m65_5];
-    wire b_pause   = keyboard_n[m65_p];
+    wire b_start1  = ~keyboard_n[m65_1];
+    wire b_start2  = ~keyboard_n[m65_2];
+    wire b_coin    = ~keyboard_n[m65_5];
+    wire b_pause   = ~keyboard_n[m65_p];
     
     // PAUSE SYSTEM
-    wire				pause_cpu;
+    wire		    pause_cpu;
     wire [11:0]		rgb_out;
     
     pause #(4,4,4,48) pause (
-        .clk_sys(clk_sys),
+        .clk_sys(clk_sys_i),
         .reset(reset),
         .r(rgb_comp[11:8]),
         .g(rgb_comp[7:4]),
@@ -222,10 +222,9 @@ module main #(
         p1 <= ~{ 1'b0, b_start2, b_start1, b_fire, b_up, b_right, b_down, b_left };
         p2 <= ~{ b_coin, 1'b0, 1'b0, b_fire_2, b_up_2, b_right_2, b_down_2, b_left_2 };
         
-        //if(reset == 0) begin
-            dsw1 <= dsw_a_i;
-            dsw2 <= dsw_b_i;
-        //end
+        dsw1 <= ~dsw_a_i;
+        dsw2 <= ~dsw_b_i;
+       
         user_flip <= flip_screen;
     end
     
@@ -1110,7 +1109,7 @@ end
         .q_a(cpu_ram_data),
     
         .address_b(hs_address),
-        .clock_b(clk_sys),
+        .clock_b(clk_sys_i),
         .data_b(hs_data_in),
         .wren_b(hs_write_enable),
         .q_b(hs_data_out)
@@ -1132,7 +1131,7 @@ end
         .q_b(gfx_fg_attr_data)
 	);
 	
-        // foreground tile index
+    // foreground tile index
     dualport_2clk_ram #(.ADDR_WIDTH(10),.DATA_WIDTH(8)
     ) gfx_fg_ram1_inst (
         .clock_a(~clk_4M ),
@@ -1323,9 +1322,10 @@ end
         .q_b(f10_data )
     );
     
+    
     // Keyboard adapter
     keyboard i_keyboard (
-        .clk_main_i      (clk_main_i),
+        .clk_main_i      (clk_sys_i),
         .key_num_i       (kb_key_num_i),
         .key_pressed_n_i (kb_key_pressed_n_i),
         .keyboard_n_o    (keyboard_n)

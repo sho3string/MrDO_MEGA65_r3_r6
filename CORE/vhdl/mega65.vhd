@@ -446,23 +446,23 @@ begin
    video_clk_o    <= clk_sys;
    video_rst_o    <= clk_sys_rst;
    
-   dsw_a_i <= main_osm_control_i(C_MENU_DSWA_7) &
-              main_osm_control_i(C_MENU_DSWA_6) &
-              main_osm_control_i(C_MENU_DSWA_5) &
-              main_osm_control_i(C_MENU_DSWA_4) &
-              main_osm_control_i(C_MENU_DSWA_3) &
-              main_osm_control_i(C_MENU_DSWA_2) &
+   dsw_a_i <= main_osm_control_i(C_MENU_DSWA_0) &
               main_osm_control_i(C_MENU_DSWA_1) &
-              main_osm_control_i(C_MENU_DSWA_0); 
+              main_osm_control_i(C_MENU_DSWA_2) &
+              main_osm_control_i(C_MENU_DSWA_3) &
+              main_osm_control_i(C_MENU_DSWA_4) &
+              main_osm_control_i(C_MENU_DSWA_5) &
+              main_osm_control_i(C_MENU_DSWA_6) &
+              main_osm_control_i(C_MENU_DSWA_7); 
    
-   dsw_b_i <= main_osm_control_i(C_MENU_DSWB_7) &
-              main_osm_control_i(C_MENU_DSWB_6) &
-              main_osm_control_i(C_MENU_DSWB_5) &
-              main_osm_control_i(C_MENU_DSWB_4) &
-              main_osm_control_i(C_MENU_DSWB_3) &
-              main_osm_control_i(C_MENU_DSWB_2) &
+   dsw_b_i <= main_osm_control_i(C_MENU_DSWB_0) &
               main_osm_control_i(C_MENU_DSWB_1) &
-              main_osm_control_i(C_MENU_DSWB_0);
+              main_osm_control_i(C_MENU_DSWB_2) &
+              main_osm_control_i(C_MENU_DSWB_3) &
+              main_osm_control_i(C_MENU_DSWB_4) &
+              main_osm_control_i(C_MENU_DSWB_5) &
+              main_osm_control_i(C_MENU_DSWB_6) &
+              main_osm_control_i(C_MENU_DSWB_7);
    
 
    ---------------------------------------------------------------------------------------------
@@ -716,7 +716,7 @@ begin
       qnice_dn_addr    <= (others => '0');
       qnice_dn_data    <= (others => '0');
       
-      if qnice_dev_id_i >= x"0100" and qnice_dev_id_i <= x"010B" then
+      if qnice_dev_id_i >= x"0100" and qnice_dev_id_i <= x"010C" then
         rom_download <= '1';
         main_power_led_col_o <= x"FF0000";
       else
@@ -776,6 +776,9 @@ begin
     // sprite bitmap k5
     wire k5_cs = (ioctl_addr[15:12] == 4'b1101);
     
+    // palette high bits
+    wire u02_cs = (dn_addr_i[15:5] == 11'b11100000000 );
+    
     // palette low bits t02
     wire t02_cs = (ioctl_addr[15:5] == 11'b11100000001 );
     
@@ -831,6 +834,11 @@ begin
          when C_DEV_K5 =>
               qnice_dn_wr   <= qnice_dev_ce_i and qnice_dev_we_i;
               qnice_dn_addr(15 downto 0) <= "1101" & qnice_dev_addr_i(11 downto 0);
+              qnice_dn_data <= qnice_dev_data_i(7 downto 0);
+              
+         when C_DEV_U02 =>
+              qnice_dn_wr   <= qnice_dev_ce_i and qnice_dev_we_i;
+              qnice_dn_addr(15 downto 0) <= "11100000000" & qnice_dev_addr_i(4 downto 0);
               qnice_dn_data <= qnice_dev_data_i(7 downto 0);
               
          when C_DEV_T02 =>

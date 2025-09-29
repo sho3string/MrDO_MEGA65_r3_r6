@@ -79,17 +79,16 @@ constant SCR_WELCOME : string :=
    "MrDo V0.5.0\n" &
    "-----------\n" &
    "\n" &
-   "MiSTer port done by Muse in 2025\n\n" &
-
+   "MiSTer port by Muse in 2025\n\n" &
    -- We are not insisting. But it would be nice if you gave us credit for MiSTer2MEGA65 by leaving these lines in
-   "Powered by MiSTer2MEGA65 Ver 2.0.1\n" &
-   "By sy2002 and MJoergen in 2025\n"     &
-   "\n\n"                                 &
-   "Credits  : Press '5' or '6'\n"        & 
-   "Start    : Press '1' or '2'\n"        &
-   "Pause    : Press 'p'\n"               &
-   "Controls : Joy 1 or arrows\n"         &
-   "Throw    : Fire button\n"             &
+   "MiSTer2MEGA65 Ver 2.0.1\n"          &
+   "By sy2002 & MJoergen in 2025\n"     &
+   "\n\n"                               &
+   "Credits  : Press '5' or '6'\n"      & 
+   "Start    : Press '1' or '2'\n"      &
+   "Pause    : Press 'p'\n"             &
+   "Controls : Joy 1 or arrows\n"       &
+   "Throw    : Fire button\n"           &
    "\n\n    Press Space to continue.\n"; 
    
 constant HELP_1 : string :=
@@ -436,7 +435,7 @@ constant OPTM_GROUPS       : OPTM_GTYPE := ( OPTM_G_TEXT + OPTM_G_HEADLINE,     
                                              OPTM_G_TEXT + OPTM_G_HEADLINE,                             -- Headline "HDMI Mode""
                                              OPTM_G_LINE,                                               -- Line
                                              OPTM_G_ROT90 + OPTM_G_SINGLESEL + OPTM_G_STDSEL,           -- Rotate On/Off toggle ("Single Select")
-                                             OPTM_G_FLIP  + OPTM_G_SINGLESEL,                           -- Flip   On/Off toggle ("Single Select")
+                                             OPTM_G_FLIP  + OPTM_G_SINGLESEL + OPTM_G_STDSEL,           -- Flip   On/Off toggle ("Single Select")
                                              OPTM_G_CRT   + OPTM_G_SINGLESEL + OPTM_G_STDSEL,           -- CRT emulation On/Off toggle ("Single Select")
                                              OPTM_G_SUBMENU,                                            -- HDMI Settings Submenu start
                                              OPTM_G_TEXT + OPTM_G_HEADLINE,                             -- HDMI Settings
@@ -462,23 +461,23 @@ constant OPTM_GROUPS       : OPTM_GTYPE := ( OPTM_G_TEXT + OPTM_G_HEADLINE,     
                                              OPTM_G_SUBMENU,                                            -- Dipswitch B Submenu start
                                              OPTM_G_TEXT + OPTM_G_HEADLINE,                             -- Dipswitch B Title
                                              OPTM_G_LINE,                                               -- Line
-                                             OPTM_G_DSWB0  + OPTM_G_SINGLESEL,                   -- 2 Credits Game
-                                             OPTM_G_DSWB1  + OPTM_G_SINGLESEL,                   -- Difficulty A \
-                                             OPTM_G_DSWB2  + OPTM_G_SINGLESEL,                   -- Difficulty B / 
-                                             OPTM_G_DSWB3  + OPTM_G_SINGLESEL,                   -- Demo Sounds
-                                             OPTM_G_DSWB4  + OPTM_G_SINGLESEL,                   -- Freeze
-                                             OPTM_G_DSWB5  + OPTM_G_SINGLESEL,                   -- Rack Test
-                                             OPTM_G_DSWB6  + OPTM_G_SINGLESEL,                   -- Unused
-                                             OPTM_G_DSWB7  + OPTM_G_SINGLESEL,                   -- Cabinet
-                                             OPTM_G_LINE,                                        -- Line
-                                             OPTM_G_DSWA0  + OPTM_G_SINGLESEL,                   -- Coinage A \
-                                             OPTM_G_DSWA1  + OPTM_G_SINGLESEL,                   -- Coinage B  |
-                                             OPTM_G_DSWA2  + OPTM_G_SINGLESEL  + OPTM_G_STDSEL,  -- Coinage C / 
-                                             OPTM_G_DSWA3  + OPTM_G_SINGLESEL,                   -- Bonus Life A \
-                                             OPTM_G_DSWA4  + OPTM_G_SINGLESEL,                   -- Bonus Life B  |
-                                             OPTM_G_DSWA5  + OPTM_G_SINGLESEL,                   -- Bonus Life C /
-                                             OPTM_G_DSWA6  + OPTM_G_SINGLESEL,                   -- Lives A \
-                                             OPTM_G_DSWA7  + OPTM_G_SINGLESEL,                   -- Lives B /
+                                             OPTM_G_DSWB0  + OPTM_G_SINGLESEL,
+                                             OPTM_G_DSWB1  + OPTM_G_SINGLESEL,
+                                             OPTM_G_DSWB2  + OPTM_G_SINGLESEL,
+                                             OPTM_G_DSWB3  + OPTM_G_SINGLESEL, 
+                                             OPTM_G_DSWB4  + OPTM_G_SINGLESEL, 
+                                             OPTM_G_DSWB5  + OPTM_G_SINGLESEL,
+                                             OPTM_G_DSWB6  + OPTM_G_SINGLESEL,
+                                             OPTM_G_DSWB7  + OPTM_G_SINGLESEL,
+                                             OPTM_G_LINE,  
+                                             OPTM_G_DSWA0  + OPTM_G_SINGLESEL,
+                                             OPTM_G_DSWA1  + OPTM_G_SINGLESEL,
+                                             OPTM_G_DSWA2  + OPTM_G_SINGLESEL  + OPTM_G_STDSEL,
+                                             OPTM_G_DSWA3  + OPTM_G_SINGLESEL,
+                                             OPTM_G_DSWA4  + OPTM_G_SINGLESEL,
+                                             OPTM_G_DSWA5  + OPTM_G_SINGLESEL,
+                                             OPTM_G_DSWA6  + OPTM_G_SINGLESEL,
+                                             OPTM_G_DSWA7  + OPTM_G_SINGLESEL,
                                              OPTM_G_LINE,                                               -- Line
                                              OPTM_G_CLOSE + OPTM_G_SUBMENU,                             -- Close submenu / back to main menu                                
                                              OPTM_G_LINE,                                               -- Line
