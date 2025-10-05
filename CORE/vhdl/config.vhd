@@ -461,15 +461,6 @@ constant OPTM_GROUPS       : OPTM_GTYPE := ( OPTM_G_TEXT + OPTM_G_HEADLINE,     
                                              OPTM_G_SUBMENU,                                            -- Dipswitch B Submenu start
                                              OPTM_G_TEXT + OPTM_G_HEADLINE,                             -- Dipswitch B Title
                                              OPTM_G_LINE,                                               -- Line
-                                             OPTM_G_DSWB0  + OPTM_G_SINGLESEL,
-                                             OPTM_G_DSWB1  + OPTM_G_SINGLESEL,
-                                             OPTM_G_DSWB2  + OPTM_G_SINGLESEL,
-                                             OPTM_G_DSWB3  + OPTM_G_SINGLESEL, 
-                                             OPTM_G_DSWB4  + OPTM_G_SINGLESEL, 
-                                             OPTM_G_DSWB5  + OPTM_G_SINGLESEL,
-                                             OPTM_G_DSWB6  + OPTM_G_SINGLESEL,
-                                             OPTM_G_DSWB7  + OPTM_G_SINGLESEL,
-                                             OPTM_G_LINE,  
                                              OPTM_G_DSWA0  + OPTM_G_SINGLESEL,
                                              OPTM_G_DSWA1  + OPTM_G_SINGLESEL,
                                              OPTM_G_DSWA2  + OPTM_G_SINGLESEL  + OPTM_G_STDSEL,
@@ -478,7 +469,16 @@ constant OPTM_GROUPS       : OPTM_GTYPE := ( OPTM_G_TEXT + OPTM_G_HEADLINE,     
                                              OPTM_G_DSWA5  + OPTM_G_SINGLESEL,
                                              OPTM_G_DSWA6  + OPTM_G_SINGLESEL,
                                              OPTM_G_DSWA7  + OPTM_G_SINGLESEL,
-                                             OPTM_G_LINE,                                               -- Line
+                                             OPTM_G_LINE,
+                                             OPTM_G_DSWB0  + OPTM_G_SINGLESEL,
+                                             OPTM_G_DSWB1  + OPTM_G_SINGLESEL,
+                                             OPTM_G_DSWB2  + OPTM_G_SINGLESEL,
+                                             OPTM_G_DSWB3  + OPTM_G_SINGLESEL, 
+                                             OPTM_G_DSWB4  + OPTM_G_SINGLESEL, 
+                                             OPTM_G_DSWB5  + OPTM_G_SINGLESEL,
+                                             OPTM_G_DSWB6  + OPTM_G_SINGLESEL,
+                                             OPTM_G_DSWB7  + OPTM_G_SINGLESEL,
+                                             OPTM_G_LINE,                                         -- Line
                                              OPTM_G_CLOSE + OPTM_G_SUBMENU,                             -- Close submenu / back to main menu                                
                                              OPTM_G_LINE,                                               -- Line
                                              OPTM_G_CLOSE                                               -- Close Menu

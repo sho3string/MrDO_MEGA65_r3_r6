@@ -20,10 +20,10 @@ use xpm.vcomponents.all;
 entity clk is
    port (
       sys_clk_i       : in  std_logic;   -- expects 100 MHz
-      clk_sys_o       : out std_logic;   -- Mr DO's 49 MHz main clock
-      clk_sys_rst_o   : out std_logic;   -- 
-      clk_98M_o       : out std_logic;   -- 98 Mhz
-      clk_98M_rst_o   : out std_logic
+      video_clk_o     : out std_logic;   -- Mr Do's 49 MHz main clock, also used for video.
+      video_rst_o     : out std_logic;   -- 
+      main_clk_o      : out std_logic;   -- 98 Mhz clock
+      main_rst_o      : out std_logic
    );
 end entity clk;
 
@@ -31,7 +31,7 @@ architecture rtl of clk is
 
 signal clkfb_main         : std_logic;
 signal clkfb_main_mmcm    : std_logic;
-signal clk_sys_mmcm       : std_logic;
+signal video_clk_mmcm     : std_logic;
 signal clk_98M_mmcm       : std_logic;
 signal main_locked        : std_logic;
 
@@ -66,7 +66,7 @@ begin
          -- Output clocks
          CLKFBOUT            => clkfb_main_mmcm,
          CLKOUT0             => clk_98M_mmcm,
-         CLKOUT1             => clk_sys_mmcm,
+         CLKOUT1             => video_clk_mmcm,
          -- Input clock control
          CLKFBIN             => clkfb_main,
          CLKIN1              => sys_clk_i,
@@ -107,13 +107,13 @@ begin
    clk_98m_bufg : BUFG
       port map (
          I => clk_98M_mmcm,
-         O => clk_98M_o
+         O => main_clk_o
       );
       
-   main_clk_bufg : BUFG
+   video_clk_bufg : BUFG
       port map (
-         I => clk_sys_mmcm,
-         O => clk_sys_o
+         I => video_clk_mmcm,
+         O => video_clk_o
       );
       
    
@@ -130,20 +130,20 @@ begin
       )
       port map (
          src_arst  => not main_locked,   -- 1-bit input: Source reset signal.
-         dest_clk  => clk_98M_o,         -- 1-bit input: Destination clock.
-         dest_arst => clk_98M_rst_o      -- 1-bit output: src_rst synchronized to the destination clock domain.
+         dest_clk  => main_clk_o,        -- 1-bit input: Destination clock.
+         dest_arst => main_rst_o         -- 1-bit output: src_rst synchronized to the destination clock domain.
                                          -- This output is registered.
       );
 
-   i_xpm_cdc_async_rst_main : xpm_cdc_async_rst
+   i_xpm_cdc_async_rst_video : xpm_cdc_async_rst
       generic map (
          RST_ACTIVE_HIGH => 1,
          DEST_SYNC_FF    => 6
       )
       port map (
          src_arst  => not main_locked,   -- 1-bit input: Source reset signal.
-         dest_clk  => clk_sys_o,         -- 1-bit input: Destination clock.
-         dest_arst => clk_sys_rst_o      -- 1-bit output: src_rst synchronized to the destination clock domain.
+         dest_clk  => video_clk_o,       -- 1-bit input: Destination clock.
+         dest_arst => video_rst_o        -- 1-bit output: src_rst synchronized to the destination clock domain.
                                          -- This output is registered.
       );
 

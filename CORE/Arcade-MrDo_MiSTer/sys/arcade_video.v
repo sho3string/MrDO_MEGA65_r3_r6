@@ -101,6 +101,11 @@ generate
 		assign G = {RGB_fix[7:4],RGB_fix[7:4]};
 		assign B = {RGB_fix[3:0],RGB_fix[3:0]};
 	end
+	else if(DW == 18) begin
+		assign R = {RGB_fix[17:12],RGB_fix[17:16]};
+		assign G = {RGB_fix[11: 6],RGB_fix[11:10]};
+		assign B = {RGB_fix[ 5: 0],RGB_fix[ 5: 4]};
+	end
 	else begin // 24
 		assign R = RGB_fix[23:16];
 		assign G = RGB_fix[15:8];
@@ -335,20 +340,19 @@ module sync_fix
 assign sync_out = sync_in ^ pol;
 
 reg pol;
-integer pos = 0, neg = 0, cnt = 0;
+reg [31:0] cnt;
 reg s1,s2;
 always @(posedge clk) begin
 	
+
 	s1 <= sync_in;
 	s2 <= s1;
+	cnt <= s2 ? (cnt - 1) : (cnt + 1);
 
-	if(~s2 & s1) neg <= cnt;
-	if(s2 & ~s1) pos <= cnt;
-
-	cnt <= cnt + 1;
-	if(s2 != s1) cnt <= 0;
-
-	pol <= pos > neg;
+	if(~s2 & s1) begin
+		cnt <= 0;
+		pol <= cnt[31];
+	end
 end
 
 endmodule

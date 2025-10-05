@@ -85,9 +85,6 @@ port (
    -- Video Clock Domain
    --------------------------------------------------------------------------------------------------------
 
-   clk_98M_o               : out std_logic;
-   clk_98M_rst_o           : out std_logic;
-  
    video_clk_o             : out std_logic;
    video_rst_o             : out std_logic;
    video_ce_o              : out std_logic;
@@ -105,11 +102,9 @@ port (
    --------------------------------------------------------------------------------------------------------
 
    clk_i                   : in  std_logic;              -- 100 MHz clock
-
-   -- Share clock and reset with the framework
-   clk_sys_o               : out std_logic;              -- Core's clock
-   clk_sys_rst_o           : out std_logic;              -- Core's reset synchronized
    
+   main_clk_o              : out std_logic;
+   main_rst_o              : out std_logic;
 
    -- M2M's reset manager provides 2 signals:
    --    m2m:   Reset the whole machine: Core and Framework
@@ -238,7 +233,6 @@ signal clk_98M_rst         : std_logic;
 -- main_clk (MiSTer core's clock)
 ---------------------------------------------------------------------------------------------
 
--- Unprocessed video output from the Galaga core
 signal main_video_red      : std_logic_vector(3 downto 0);   
 signal main_video_green    : std_logic_vector(3 downto 0);
 signal main_video_blue     : std_logic_vector(3 downto 0);
@@ -267,27 +261,26 @@ constant C_MENU_VGA_STD       : natural := 23;
 constant C_MENU_VGA_15KHZHSVS : natural := 27;
 constant C_MENU_VGA_15KHZCS   : natural := 28;
 
--- Dipswitch B
-constant C_MENU_DSWB_0 : natural := 35;
-constant C_MENU_DSWB_1 : natural := 36;
-constant C_MENU_DSWB_2 : natural := 37;
-constant C_MENU_DSWB_3 : natural := 38;
-constant C_MENU_DSWB_4 : natural := 39;
-constant C_MENU_DSWB_5 : natural := 40;
-constant C_MENU_DSWB_6 : natural := 41;
-constant C_MENU_DSWB_7 : natural := 42;
-
 -- Dipswitch A
-constant C_MENU_DSWA_0 : natural := 44;
-constant C_MENU_DSWA_1 : natural := 45;
-constant C_MENU_DSWA_2 : natural := 46;
-constant C_MENU_DSWA_3 : natural := 47;
-constant C_MENU_DSWA_4 : natural := 48;
-constant C_MENU_DSWA_5 : natural := 49;
-constant C_MENU_DSWA_6 : natural := 50;
-constant C_MENU_DSWA_7 : natural := 51;
+constant C_MENU_DSWA_0 : natural := 35;
+constant C_MENU_DSWA_1 : natural := 36;
+constant C_MENU_DSWA_2 : natural := 37;
+constant C_MENU_DSWA_3 : natural := 38;
+constant C_MENU_DSWA_4 : natural := 39;
+constant C_MENU_DSWA_5 : natural := 40;
+constant C_MENU_DSWA_6 : natural := 41;
+constant C_MENU_DSWA_7 : natural := 42;
 
--- Galaga specific video processing
+-- Dipswitch B
+constant C_MENU_DSWB_0 : natural := 44;
+constant C_MENU_DSWB_1 : natural := 45;
+constant C_MENU_DSWB_2 : natural := 46;
+constant C_MENU_DSWB_3 : natural := 47;
+constant C_MENU_DSWB_4 : natural := 48;
+constant C_MENU_DSWB_5 : natural := 49;
+constant C_MENU_DSWB_6 : natural := 50;
+constant C_MENU_DSWB_7 : natural := 51;
+
 signal div          : std_logic_vector(2 downto 0);
 signal dim_video    : std_logic := '0';
 signal dsw_a_i      : std_logic_vector(7 downto 0);
@@ -322,7 +315,6 @@ signal ddram_data       : std_logic_vector(63 downto 0);
 signal ddram_be         : std_logic_vector( 7 downto 0);
 signal ddram_we         : std_logic;
 
--- ROM devices for Galaga
 signal qnice_dn_addr    : std_logic_vector(24 downto 0);
 signal qnice_dn_data    : std_logic_vector(7 downto 0);
 signal qnice_dn_wr      : std_logic;
@@ -330,15 +322,15 @@ signal qnice_dn_wr      : std_logic;
 -- Check the rom download state
 signal rom_download     : std_logic := '0';
 
--- 320x288 @ 50 Hz
-constant C_320_288_50 : video_modes_t := (
+-- 320x248 @ 50 Hz
+constant C_320_248_50 : video_modes_t := (
    CLK_KHZ     => 4900,       -- 4.9 MHz
    CLK_SEL     => "001",
    CEA_CTA_VIC => 0,
    ASPECT      => "01",       -- aspect ratio: 01=4:3, 10=16:9: "01" for SVGA
    PIXEL_REP   => '0',        -- no pixel repetition
    H_PIXELS    => 320,        -- horizontal display width in pixels
-   V_PIXELS    => 240,        -- vertical display width in rows
+   V_PIXELS    => 248,        -- vertical display width in rows
    H_PULSE     => 28,         -- horizontal sync pulse width in pixels
    H_BP        => 28,         -- horizontal back porch width in pixels
    H_FP        => 8,          -- horizontal front porch width in pixels
@@ -418,11 +410,11 @@ begin
    clk_gen : entity work.clk
       port map (
          sys_clk_i         => clk_i,           -- expects 100 MHz
-         clk_sys_o         => clk_sys,         -- Main clock and video clock
-         clk_sys_rst_o     => clk_sys_rst,     -- reset, synchronized
+         video_clk_o       => clk_sys,         -- Main clock and video clock
+         video_rst_o       => clk_sys_rst,     -- reset, synchronized
          
-         clk_98M_o         => clk_98M,         -- 49 MHz
-         clk_98M_rst_o     => clk_98M_rst
+         main_clk_o        => clk_98M,         -- 49 MHz
+         main_rst_o        => clk_98M_rst
       ); -- clk_gen
    
     i_cdc_qnice2video : xpm_cdc_array_single
@@ -437,14 +429,10 @@ begin
       ); -- i_cdc_qnice2video
 
    -- core clocks
-   clk_sys_o      <= clk_sys;
-   clk_sys_rst_o  <= clk_sys_rst;
-   clk_98M_o      <= clk_98M;
-   clk_98M_rst_o  <= clk_98M_rst;
-   
-   -- video clocks
    video_clk_o    <= clk_sys;
    video_rst_o    <= clk_sys_rst;
+   main_clk_o     <= clk_98M;
+   main_rst_o     <= clk_98M_rst;
    
    dsw_a_i <= main_osm_control_i(C_MENU_DSWA_0) &
               main_osm_control_i(C_MENU_DSWA_1) &
@@ -480,8 +468,7 @@ begin
          G_VDNUM              => C_VDNUM
       )
       port map (
-         clk_sys_i            => clk_sys,
-         clk_98M_i            => clk_98M,
+         clk_main_i           => clk_98M,
          reset_soft_i         => main_reset_core_i,
          reset_hard_i         => main_reset_m2m_i,
          pause_i              => main_pause_core_i and main_osm_control_i(C_MENU_OSMPAUSE),
@@ -492,6 +479,7 @@ begin
          
          -- Video output
          -- This is PAL 720x576 @ 50 Hz (pixel clock 27 MHz), but synchronized to main_clk (54 MHz).
+         clk_sys_i            => clk_sys,
          video_ce_o           => ce_vid,
          video_ce_ovl_o       => open,
          video_red_o          => main_video_red,
@@ -541,24 +529,16 @@ begin
         if rising_edge(clk_sys) then
  
             video_ce_ovl_o <= '0';
-            
-            old_clk <= ce_vid;
-            ce_pix  <= old_clk and (not ce_vid);
-            
+       
+            div <= std_logic_vector(unsigned(div) +1);
             if div(0) = '1' then
-               video_ce_ovl_o <= '1'; -- 24 MHz
+               video_ce_ovl_o <= '1'; -- 24.5 MHz
             end if;
 
-            if dim_video = '1' then
-                video_red   <= "0" & main_video_red   & main_video_red(3 downto 1);
-                video_green <= "0" & main_video_green & main_video_green(3 downto 1);
-                video_blue  <= "0" & main_video_blue  & main_video_blue(3 downto 1);  
-            else
-                video_red   <= main_video_red   & main_video_red;
-                video_green <= main_video_green & main_video_green;
-                video_blue  <= main_video_blue  & main_video_blue;
-            end if;
-
+            video_red   <= main_video_red   & main_video_red;
+            video_green <= main_video_green & main_video_green;
+            video_blue  <= main_video_blue  & main_video_blue;
+           
             video_hs     <= main_video_hs;
             video_vs     <= main_video_vs;
             video_hblank <= main_video_hblank;
@@ -577,7 +557,7 @@ begin
            video_hs_o       <= video_rot_hs;
            video_hblank_o   <= video_rot_hblank;
            video_vblank_o   <= video_rot_vblank;
-           video_ce_o       <= ce_pix;
+           video_ce_o       <= ce_vid;--ce_pix;
        else
            video_red_o      <= video_red;
            video_green_o    <= video_green;
@@ -586,7 +566,7 @@ begin
            video_hs_o       <= video_hs;
            video_hblank_o   <= video_hblank;
            video_vblank_o   <= video_vblank;
-           video_ce_o       <= ce_pix;           
+           video_ce_o       <= ce_vid;--ce_pix;           
        end if;
     end process;
     
@@ -595,7 +575,7 @@ begin
        port map (
           --inputs
           CLK_VIDEO      => clk_sys,
-          CE_PIXEL       => ce_pix,
+          CE_PIXEL       => ce_vid,--ce_pix,
           VGA_R          => video_red,
           VGA_G          => video_green,
           VGA_B          => video_blue,
@@ -627,7 +607,7 @@ begin
          G_ADDR_WIDTH => 16,
          G_H_LEFT     => 64,
          G_H_RIGHT    => 192+64, -- 320 - 192 /2 = 64 left & right
-         G_VIDEO_MODE => C_320_288_50
+         G_VIDEO_MODE => C_320_248_50
       )
       
       port map (
@@ -636,7 +616,7 @@ begin
          ddram_din_i      => ddram_data(31 downto 0),
          ddram_we_i       => ddram_we,
          video_clk_i      => clk_sys,
-         video_ce_i       => ce_pix,
+         video_ce_i       => ce_vid,--ce_pix,
          video_red_o      => video_rot_red,
          video_green_o    => video_rot_green,
          video_blue_o     => video_rot_blue,
@@ -646,7 +626,7 @@ begin
          video_vblank_o   => video_rot_vblank
       ); -- i_frame_buffer
       
-   ---------------------------------------------------------------------------------------------
+    ---------------------------------------------------------------------------------------------
    -- Audio and video settings (QNICE clock domain)
    ---------------------------------------------------------------------------------------------
 
@@ -665,8 +645,6 @@ begin
    -- Use On-Screen-Menu selections to configure several audio and video settings
    -- Video and audio mode control
    qnice_dvi_o                <= '0';                                         -- 0=HDMI (with sound), 1=DVI (no sound)
-   qnice_scandoubler_o        <= (not qnice_osm_control_i(C_MENU_VGA_15KHZHSVS)) and
-                                 (not qnice_osm_control_i(C_MENU_VGA_15KHZCS));   
    qnice_audio_mute_o         <= '0';                                         -- audio is not muted
    --qnice_audio_filter_o       <= qnice_osm_control_i(C_MENU_IMPROVE_AUDIO);   -- 0 = raw audio, 1 = use filters from globals.vhd
    --qnice_zoom_crop_o          <= qnice_osm_control_i(C_MENU_HDMI_ZOOM);       -- 0 = no zoom/crop

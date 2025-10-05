@@ -675,8 +675,8 @@ begin
          clk_i                   => clk_i,
 
          -- Share clock and reset with the framework
-         clk_sys_o              => main_clk,            -- CORE's 54 MHz clock
-         clk_sys_rst_o          => main_rst,            -- CORE's reset, synchronized
+         main_clk_o              => main_clk,            -- CORE's 54 MHz clock
+         main_rst_o              => main_rst,            -- CORE's reset, synchronized
 
          --------------------------------------------------------------------------------------------------------
          -- QNICE Clock Domain
@@ -878,4 +878,3 @@ begin
       ); -- CORE
 
 end architecture synthesis;
-

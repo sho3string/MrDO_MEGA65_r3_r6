@@ -10,8 +10,7 @@
 module main #(
     parameter G_VDNUM = 1
 )(
-    input  wire        clk_sys_i,
-    input  wire        clk_98M_i,
+    input  wire        clk_main_i,
     input  wire        reset_soft_i,
     input  wire        reset_hard_i,
     input  wire        rom_download, 
@@ -21,15 +20,16 @@ module main #(
     input  wire [31:0] clk_main_speed_i,
 
     // Video
-    output wire        video_ce_o,
+    input  wire        clk_sys_i,
+    output reg         video_ce_o,
     output wire        video_ce_ovl_o,
     output wire [3:0]  video_red_o,
     output wire [3:0]  video_green_o,
     output wire [3:0]  video_blue_o,
-    output wire        video_vs_o,
-    output wire        video_hs_o,
-    output wire        video_hblank_o,
-    output wire        video_vblank_o,
+    output reg         video_vs_o,
+    output reg         video_hs_o,
+    output reg         video_hblank_o,
+    output reg         video_vblank_o,
 
     // Audio (signed PCM)
     output [15:0] audio_left_o,
@@ -87,11 +87,6 @@ module main #(
     localparam m65_s        = 13;
     localparam m65_capslock = 72;
     localparam m65_help     = 67;
-    
-    // OSM controls
-    assign options[0] = osm_control_i[C_MENU_OSMPAUSE];
-    assign options[1] = osm_control_i[C_MENU_OSMDIM];
-    assign flip_screen = osm_control_i[C_MENU_FLIP];
 
     // Internal signals
     wire [79:0] keyboard_n;
@@ -122,7 +117,7 @@ module main #(
     assign audio_right_o = {sound_signed[7:0], sound_signed[7:0]};
     
     wire [1:0]  buttons;
-    wire        reset = reset_hard_i | reset_soft_i;
+    wire        reset = reset_hard_i | reset_soft_i | rom_download;
 
     wire [15:0] hs_address;
     wire [7:0]  hs_data_in;
@@ -133,6 +128,12 @@ module main #(
     wire [1:0]  options;
     reg         self_test;
     
+      // OSM controls
+    assign options[0] = osm_control_i[C_MENU_OSMPAUSE];
+    assign options[1] = osm_control_i[C_MENU_OSMDIM];
+    assign flip_screen = osm_control_i[C_MENU_FLIP];
+    
+    
     reg  clk_5M,clk_10M,clk_4M,clk_8M;
     
     reg [5:0] clk10_count;
@@ -140,7 +141,7 @@ module main #(
     reg [5:0] clk8_count;
     reg [5:0] clk4_count;
 
-    always @ (posedge clk_98M_i) begin
+    always @ (posedge clk_main_i) begin
     if ( reset == 1 ) begin
             clk10_count <= 0;
             clk5_count <= 0;
@@ -176,9 +177,7 @@ module main #(
             end
         end
     end
-    
-    assign video_ce_o = clk_5M;
-    
+
     wire b_up      = ~joy_1_up_n_i;
     wire b_down    = ~joy_1_down_n_i;
     wire b_left    = ~joy_1_left_n_i;
@@ -194,7 +193,6 @@ module main #(
     wire b_start1  = ~keyboard_n[m65_1];
     wire b_start2  = ~keyboard_n[m65_2];
     wire b_coin    = ~keyboard_n[m65_5];
-    wire b_pause   = ~keyboard_n[m65_p];
     
     // PAUSE SYSTEM
     wire		    pause_cpu;
@@ -206,9 +204,12 @@ module main #(
         .r(rgb_comp[11:8]),
         .g(rgb_comp[7:4]),
         .b(rgb_comp[3:0]),
-        .user_button(b_pause),
+        .user_button(~keyboard_n[m65_p]),
         .pause_request(hs_pause),
+        .pause_cpu(pause_cpu),
+        .dim_video(dim_video_o),
         .options(options),
+        .OSD_STATUS(0),
         .rgb_out({video_red_o,video_green_o,video_blue_o})
     );
 
@@ -231,12 +232,12 @@ module main #(
     reg [11:0] rgb_comp;
     
     wire hbl;
-    //wire vbl;
+    wire vbl;
     wire hx;
     wire hff;
     
-    //wire hbl_hx;
-    assign video_hblank_o = hbl | hx;
+    wire hbl_hx;
+    assign hbl_hx = hbl | hx;
     
     wire [7:0] h;
     wire [7:0] v;
@@ -259,14 +260,26 @@ module main #(
     .hff(hff),
     .hx(hx),
 //    output      hx_n,
-    .vbl(video_vblank_o),
+    .vbl(vbl),
 //    output reg  vbl_n,
 //    output reg  vbls,
 //    output reg  vbls_n,
     
-    .hsync(video_hs_o),     
-    .vsync(video_vs_o)   
+    .hsync(hsync),     
+    .vsync(vsync)   
     );
+    
+    reg clk_5M_d;
+    always @(posedge clk_sys_i) begin
+        clk_5M_d <= clk_5M;
+        video_ce_o <= clk_5M & ~clk_5M_d;  // rising edge pulse
+        
+        video_vs_o     <= vsync;
+        video_hs_o     <= hsync;
+        video_hblank_o <= hbl_hx;
+        video_vblank_o <= vbl;
+    end
+    
     
     wire [7:0] s8_data;
     wire [7:0] u8_data;
@@ -466,7 +479,7 @@ module main #(
     
     // hbl is made 64 clocks
     always @ (posedge clk_10M) begin
-        if ( video_hblank_o ) begin
+        if ( hbl_hx ) begin
             // clocked on the rising edge of HA. ie h[0]
             if ( clk_5M == 1 && h[0] == 1 ) begin
                 // if tile is visible and still room in address stack
@@ -588,7 +601,7 @@ module main #(
             // the ram we is asserted after the output is latched then the zero value is written on the opposite 10MHz edge.
             // address clock on the streaming buffer is at 5M.  It writes when the clock is high because clock gets inverted by L9
             
-            if ( clk_5M == 1 && ~video_hblank_o ) begin
+            if ( clk_5M == 1 && ~hbl_hx ) begin
                 g8_buf[g8_count_flip][3:0] <= 0;
             end
         end else begin
@@ -602,7 +615,7 @@ module main #(
                     end
                 end
             end
-            if ( clk_5M == 1 && ~video_hblank_o ) begin
+            if ( clk_5M == 1 && ~hbl_hx ) begin
                 f8_buf[f8_count_flip][3:0] <= 0;
             end
             
@@ -642,14 +655,14 @@ module main #(
         // data in spr_ram_data
         // { pad[7:2], pad[1:0] } on the schematic.  pad counter
         // is h counter really reset and the same time as pad counter (A7)?
-        if ( video_hblank_o ) begin
+        if ( hbl_hx ) begin
             // 64 cycles of checking if y active and storing a7 if it is
             spr_addr <= { a7[5:0], 2'b01 };  // only y
         end else begin
             spr_addr <= { sp_addr_cache[a9], pad[1:0] };  // only y 63-0
         end
         
-        if ( ~video_hblank_o ) begin
+        if ( ~hbl_hx ) begin
         
             // set the current position into the bitmap rom based on the tile, 
             // y offset and bitmap byte offset
@@ -844,7 +857,7 @@ module main #(
     wire [7:0] bg_pal_data_low;
     
     always @ (posedge clk_5M ) begin
-        if ( ~video_hblank_o & ~video_vblank_o ) begin // LS32 R2
+        if ( ~hbl_hx & ~vbl ) begin // LS32 R2
             if ( draw ) begin
                 rgb_comp <= { fg_red[7:4], fg_green[7:4], fg_blue[7:4] };
             end else begin
@@ -921,7 +934,7 @@ module main #(
                 endcase 
         end else if (cpu_addr >= 16'h9000 && cpu_addr < 16'h9800 ) begin 
             // 0x9000-0x90ff sprite ram
-            if ( ~video_vblank_o ) begin
+            if ( ~vbl ) begin
                 spr_ram_wr <=  ~wr_n ;
             end
         end else if (cpu_addr[15:11] == 5'b11111 ) begin 
@@ -1005,7 +1018,7 @@ end
     //end
     
     always @ (posedge clk_4M ) begin
-        prev_vbl <= video_vblank_o;
+        prev_vbl <= vbl;
         vert_int_n <= ( v !== 208 ) ;
     end
     
