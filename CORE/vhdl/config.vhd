@@ -76,8 +76,8 @@ type WHS_RECORD_ARRAY_TYPE is array (0 to WHS_RECORDS - 1) of WHS_RECORD_TYPE;
 
 constant SCR_WELCOME : string :=
 
-   "MrDo V0.5.0\n" &
-   "-----------\n" &
+   "Mr Do! V0.5.0\n" &
+   "-------------\n" &
    "\n" &
    "MiSTer port by Muse in 2025\n\n" &
    -- We are not insisting. But it would be nice if you gave us credit for MiSTer2MEGA65 by leaving these lines in
@@ -266,7 +266,7 @@ constant SEL_CORENAME      : std_logic_vector(15 downto 0) := x"0200";
 
 -- Currently this is only used in the debug console. Use the welcome screen and the
 -- help system to display the name and version of the Galaga core to the end user
-constant CORENAME          : string := "MrDo V1";
+constant CORENAME          : string := "Mr Do! V1";
 
 --------------------------------------------------------------------------------------------------------------------
 -- "Help" menu / Options menu  (Selectors 0x0300 .. 0x0312): DO NOT TOUCH
@@ -329,7 +329,7 @@ constant OPTM_DX           : natural := 23;
 constant OPTM_DY           : natural := 21;
 
 constant OPTM_ITEMS        : string :=
-   " MrDo - Universal\n"    &
+   " Mr Do! - Universal\n"  &
    "\n"                     &
    " Pause when OSD open\n" &
    " Dim Video after 10s\n" &
@@ -457,10 +457,10 @@ constant OPTM_GROUPS       : OPTM_GTYPE := ( OPTM_G_TEXT + OPTM_G_HEADLINE,     
                                              OPTM_G_VGA_MODES,
                                              OPTM_G_LINE,
                                              OPTM_G_CLOSE         + OPTM_G_SUBMENU,
-                                             OPTM_G_LINE,                                               -- Line
-                                             OPTM_G_SUBMENU,                                            -- Dipswitch B Submenu start
-                                             OPTM_G_TEXT + OPTM_G_HEADLINE,                             -- Dipswitch B Title
-                                             OPTM_G_LINE,                                               -- Line
+                                             OPTM_G_LINE,
+                                             OPTM_G_SUBMENU,
+                                             OPTM_G_TEXT + OPTM_G_HEADLINE,
+                                             OPTM_G_LINE,
                                              OPTM_G_DSWA0  + OPTM_G_SINGLESEL,
                                              OPTM_G_DSWA1  + OPTM_G_SINGLESEL,
                                              OPTM_G_DSWA2  + OPTM_G_SINGLESEL  + OPTM_G_STDSEL,
@@ -478,10 +478,10 @@ constant OPTM_GROUPS       : OPTM_GTYPE := ( OPTM_G_TEXT + OPTM_G_HEADLINE,     
                                              OPTM_G_DSWB5  + OPTM_G_SINGLESEL,
                                              OPTM_G_DSWB6  + OPTM_G_SINGLESEL,
                                              OPTM_G_DSWB7  + OPTM_G_SINGLESEL,
-                                             OPTM_G_LINE,                                         -- Line
-                                             OPTM_G_CLOSE + OPTM_G_SUBMENU,                             -- Close submenu / back to main menu                                
-                                             OPTM_G_LINE,                                               -- Line
-                                             OPTM_G_CLOSE                                               -- Close Menu
+                                             OPTM_G_LINE,
+                                             OPTM_G_CLOSE + OPTM_G_SUBMENU,                           
+                                             OPTM_G_LINE,
+                                             OPTM_G_CLOSE
                                            );
 
 
