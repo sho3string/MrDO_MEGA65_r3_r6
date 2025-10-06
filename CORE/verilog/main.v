@@ -269,6 +269,7 @@ module main #(
     .vsync(vsync)   
     );
     
+    // Detect rising edge of clk_5M to produce a single-cycle video_ce_o pulse for pixel timing
     reg clk_5M_d;
     always @(posedge clk_sys_i) begin
         clk_5M_d <= clk_5M;
@@ -1335,8 +1336,6 @@ end
         .q_b(f10_data )
     );
     
-    
-    // Keyboard adapter
     keyboard i_keyboard (
         .clk_main_i      (clk_sys_i),
         .key_num_i       (kb_key_num_i),
