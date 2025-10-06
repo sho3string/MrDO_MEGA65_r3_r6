@@ -1,382 +1,971 @@
-## MiSTer2MEGA framework pin mapping
-##
-## Done by MJoergen and sy2002 in 2023 and licensed under GPL v3
+----------------------------------------------------------------------------------
+-- Commodore 64 for MEGA65 (C64MEGA65)
+--
+-- MEGA65 R6 main file that contains the whole machine
+--
+-- based on C64_MiSTer by the MiSTer development team
+-- port done by MJoergen and sy2002 in 2023 and licensed under GPL v3
+----------------------------------------------------------------------------------
 
-################################
-## Pin to signal mapping
-################################
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
 
-# Onboard crystal oscillator = 100 MHz
-set_property -dict {PACKAGE_PIN V13  IOSTANDARD LVCMOS33} [get_ports {clk_i}];                  # CLOCK_FPGA_MRCC
+library work;
+use work.video_modes_pkg.all;
 
-# Reset button on the side of the machine
-set_property -dict {PACKAGE_PIN J19  IOSTANDARD LVCMOS33} [get_ports {reset_button_i}];         # RESET
+entity mega65_r6 is
+port (
+   -- Onboard crystal oscillator = 100 MHz
+   clk_i                   : in    std_logic;
 
-# USB-RS232 Interface
-set_property -dict {PACKAGE_PIN L14  IOSTANDARD LVCMOS33} [get_ports {uart_rxd_i}];             # DBG_UART_RX
-set_property -dict {PACKAGE_PIN L13  IOSTANDARD LVCMOS33} [get_ports {uart_txd_o}];             # DBG_UART_TX
+   -- Reset button on the side of the machine
+   reset_button_i          : in    std_logic;      -- Active high
 
-# VGA via VDAC. U3 = ADV7125BCPZ170
-set_property -dict {PACKAGE_PIN W11  IOSTANDARD LVCMOS33} [get_ports {vdac_blank_n_o}];         # VDAC_BLANK_N
-set_property -dict {PACKAGE_PIN AA9  IOSTANDARD LVCMOS33} [get_ports {vdac_clk_o}];             # VDAC_CLK
-set_property -dict {PACKAGE_PIN W16  IOSTANDARD LVCMOS33} [get_ports {vdac_psave_n_o}];         # VDAC_PSAVE_N
-set_property -dict {PACKAGE_PIN V10  IOSTANDARD LVCMOS33} [get_ports {vdac_sync_n_o}];          # VDAC_SYNC_N
-set_property -dict {PACKAGE_PIN W10  IOSTANDARD LVCMOS33} [get_ports {vga_blue_o[0]}];          # B0
-set_property -dict {PACKAGE_PIN Y12  IOSTANDARD LVCMOS33} [get_ports {vga_blue_o[1]}];          # B1
-set_property -dict {PACKAGE_PIN AB12 IOSTANDARD LVCMOS33} [get_ports {vga_blue_o[2]}];          # B2
-set_property -dict {PACKAGE_PIN AA11 IOSTANDARD LVCMOS33} [get_ports {vga_blue_o[3]}];          # B3
-set_property -dict {PACKAGE_PIN AB11 IOSTANDARD LVCMOS33} [get_ports {vga_blue_o[4]}];          # B4
-set_property -dict {PACKAGE_PIN Y11  IOSTANDARD LVCMOS33} [get_ports {vga_blue_o[5]}];          # B5
-set_property -dict {PACKAGE_PIN AB10 IOSTANDARD LVCMOS33} [get_ports {vga_blue_o[6]}];          # B6
-set_property -dict {PACKAGE_PIN AA10 IOSTANDARD LVCMOS33} [get_ports {vga_blue_o[7]}];          # B7
-set_property -dict {PACKAGE_PIN Y14  IOSTANDARD LVCMOS33} [get_ports {vga_green_o[0]}];         # G0
-set_property -dict {PACKAGE_PIN W14  IOSTANDARD LVCMOS33} [get_ports {vga_green_o[1]}];         # G1
-set_property -dict {PACKAGE_PIN AA15 IOSTANDARD LVCMOS33} [get_ports {vga_green_o[2]}];         # G2
-set_property -dict {PACKAGE_PIN AB15 IOSTANDARD LVCMOS33} [get_ports {vga_green_o[3]}];         # G3
-set_property -dict {PACKAGE_PIN Y13  IOSTANDARD LVCMOS33} [get_ports {vga_green_o[4]}];         # G4
-set_property -dict {PACKAGE_PIN AA14 IOSTANDARD LVCMOS33} [get_ports {vga_green_o[5]}];         # G5
-set_property -dict {PACKAGE_PIN AA13 IOSTANDARD LVCMOS33} [get_ports {vga_green_o[6]}];         # G6
-set_property -dict {PACKAGE_PIN AB13 IOSTANDARD LVCMOS33} [get_ports {vga_green_o[7]}];         # G7
-set_property -dict {PACKAGE_PIN W12  IOSTANDARD LVCMOS33} [get_ports {vga_hs_o}];               # HSYNC
-set_property -dict {PACKAGE_PIN U15  IOSTANDARD LVCMOS33} [get_ports {vga_red_o[0]}];           # R0
-set_property -dict {PACKAGE_PIN V15  IOSTANDARD LVCMOS33} [get_ports {vga_red_o[1]}];           # R1
-set_property -dict {PACKAGE_PIN T14  IOSTANDARD LVCMOS33} [get_ports {vga_red_o[2]}];           # R2
-set_property -dict {PACKAGE_PIN Y17  IOSTANDARD LVCMOS33} [get_ports {vga_red_o[3]}];           # R3
-set_property -dict {PACKAGE_PIN Y16  IOSTANDARD LVCMOS33} [get_ports {vga_red_o[4]}];           # R4
-set_property -dict {PACKAGE_PIN AB17 IOSTANDARD LVCMOS33} [get_ports {vga_red_o[5]}];           # R5
-set_property -dict {PACKAGE_PIN AA16 IOSTANDARD LVCMOS33} [get_ports {vga_red_o[6]}];           # R6
-set_property -dict {PACKAGE_PIN AB16 IOSTANDARD LVCMOS33} [get_ports {vga_red_o[7]}];           # R7
-set_property -dict {PACKAGE_PIN W15  IOSTANDARD LVCMOS33} [get_ports {vga_scl_io}];             # VGA_SCL
-set_property -dict {PACKAGE_PIN T15  IOSTANDARD LVCMOS33} [get_ports {vga_sda_io}];             # VGA_SDA
-set_property -dict {PACKAGE_PIN V14  IOSTANDARD LVCMOS33} [get_ports {vga_vs_o}];               # VSYNC
+   -- USB-RS232 Interface
+   uart_rxd_i              : in    std_logic;
+   uart_txd_o              : out   std_logic;
 
-# HDMI output. U10 = PTN3363BSMP
-# I2C address 0x40.
-set_property -dict {PACKAGE_PIN Y1   IOSTANDARD TMDS_33}  [get_ports {tmds_clk_n_o}];           # TXC_N
-set_property -dict {PACKAGE_PIN W1   IOSTANDARD TMDS_33}  [get_ports {tmds_clk_p_o}];           # TXC_P
-set_property -dict {PACKAGE_PIN AB1  IOSTANDARD TMDS_33}  [get_ports {tmds_data_n_o[0]}];       # TX0_N
-set_property -dict {PACKAGE_PIN AB2  IOSTANDARD TMDS_33}  [get_ports {tmds_data_n_o[1]}];       # TX1_N
-set_property -dict {PACKAGE_PIN AB5  IOSTANDARD TMDS_33}  [get_ports {tmds_data_n_o[2]}];       # TX2_N
-set_property -dict {PACKAGE_PIN AA1  IOSTANDARD TMDS_33}  [get_ports {tmds_data_p_o[0]}];       # TX0_P
-set_property -dict {PACKAGE_PIN AB3  IOSTANDARD TMDS_33}  [get_ports {tmds_data_p_o[1]}];       # TX1_P
-set_property -dict {PACKAGE_PIN AA5  IOSTANDARD TMDS_33}  [get_ports {tmds_data_p_o[2]}];       # TX2_P
-set_property -dict {PACKAGE_PIN M15  IOSTANDARD LVCMOS33} [get_ports {hdmi_hiz_en_o}];          # HIZ_EN
-set_property -dict {PACKAGE_PIN Y8   IOSTANDARD LVCMOS33} [get_ports {hdmi_hpd_i}];             # HPD_A
-set_property -dict {PACKAGE_PIN AB7  IOSTANDARD LVCMOS33} [get_ports {hdmi_scl_io}];            # SCL_A
-set_property -dict {PACKAGE_PIN V9   IOSTANDARD LVCMOS33} [get_ports {hdmi_sda_io}];            # SDA_A
-set_property -dict {PACKAGE_PIN AB8  IOSTANDARD LVCMOS33} [get_ports {hdmi_ls_oe_n_o}];         # LS_OE
+   -- VGA via VDAC. U3 = ADV7125BCPZ170
+   vga_red_o               : out   std_logic_vector(7 downto 0);
+   vga_green_o             : out   std_logic_vector(7 downto 0);
+   vga_blue_o              : out   std_logic_vector(7 downto 0);
+   vga_hs_o                : out   std_logic;
+   vga_vs_o                : out   std_logic;
+   vga_scl_io              : inout std_logic;
+   vga_sda_io              : inout std_logic;
+   vdac_clk_o              : out   std_logic;
+   vdac_sync_n_o           : out   std_logic;
+   vdac_blank_n_o          : out   std_logic;
+   vdac_psave_n_o          : out   std_logic;
 
-# MEGA65 Keyboard
-set_property -dict {PACKAGE_PIN A14  IOSTANDARD LVCMOS33} [get_ports {kb_io0_o}];               # KB_IO1
-set_property -dict {PACKAGE_PIN A13  IOSTANDARD LVCMOS33} [get_ports {kb_io1_o}];               # KB_IO2
-set_property -dict {PACKAGE_PIN C13  IOSTANDARD LVCMOS33} [get_ports {kb_io2_i}];               # KB_IO3
-set_property -dict {PACKAGE_PIN E13  IOSTANDARD LVCMOS33} [get_ports {kb_tck_o}];               # KB_TCK
-set_property -dict {PACKAGE_PIN E14  IOSTANDARD LVCMOS33} [get_ports {kb_tdo_i}];               # KB_TDO
-set_property -dict {PACKAGE_PIN D14  IOSTANDARD LVCMOS33} [get_ports {kb_tms_o}];               # KB_TMS
-set_property -dict {PACKAGE_PIN D15  IOSTANDARD LVCMOS33} [get_ports {kb_tdi_o}];               # KB_TDI
-set_property -dict {PACKAGE_PIN B13  IOSTANDARD LVCMOS33} [get_ports {kb_jtagen_o}];            # KB_JTAGEN
+   -- HDMI. U10 = PTN3363BSMP
+   -- I2C address 0x40
+   tmds_data_p_o           : out   std_logic_vector(2 downto 0);
+   tmds_data_n_o           : out   std_logic_vector(2 downto 0);
+   tmds_clk_p_o            : out   std_logic;
+   tmds_clk_n_o            : out   std_logic;
+   hdmi_hiz_en_o           : out   std_logic;   -- Connect to U10.HIZ_EN
+   hdmi_ls_oe_n_o          : out   std_logic;   -- Connect to U10.OE#
+   hdmi_hpd_i              : in    std_logic;   -- Connect to U10.HPD_SOURCE
+   hdmi_scl_io             : inout std_logic;   -- Connect to U10.SCL_SOURCE
+   hdmi_sda_io             : inout std_logic;   -- Connect to U10.SDA_SOURCE
 
-# Micro SD Connector (external slot at back of the cover)
-set_property -dict {PACKAGE_PIN K1   IOSTANDARD LVCMOS33} [get_ports {sd_cd_i}];                # SD_CD
-set_property -dict {PACKAGE_PIN G2   IOSTANDARD LVCMOS33} [get_ports {sd_clk_o}];               # SD_CLK
-set_property -dict {PACKAGE_PIN H2   IOSTANDARD LVCMOS33} [get_ports {sd_miso_i}];              # SD_D0
-set_property -dict {PACKAGE_PIN J2   IOSTANDARD LVCMOS33} [get_ports {sd_mosi_o}];              # SD_CMD
-set_property -dict {PACKAGE_PIN K2   IOSTANDARD LVCMOS33} [get_ports {sd_reset_o}];             # SD_D3
-set_property -dict {PACKAGE_PIN H3   IOSTANDARD LVCMOS33} [get_ports {sd_d1_i}];                # SD_D1
-set_property -dict {PACKAGE_PIN J1   IOSTANDARD LVCMOS33} [get_ports {sd_d2_i}];                # SD_D2
+   -- MEGA65 smart keyboard controller
+   kb_io0_o                : out   std_logic;                 -- clock to keyboard
+   kb_io1_o                : out   std_logic;                 -- data output to keyboard
+   kb_io2_i                : in    std_logic;                 -- data input from keyboard
+   kb_tck_o                : out   std_logic;
+   kb_tdo_i                : in    std_logic;
+   kb_tms_o                : out   std_logic;
+   kb_tdi_o                : out   std_logic;
+   kb_jtagen_o             : out   std_logic;
 
-# SD Connector (this is the slot at the bottom side of the case under the cover)
-set_property -dict {PACKAGE_PIN D17  IOSTANDARD LVCMOS33} [get_ports {sd2_cd_i}];               # SD2_CD
-set_property -dict {PACKAGE_PIN B17  IOSTANDARD LVCMOS33} [get_ports {sd2_clk_o}];              # SD2_CLK
-set_property -dict {PACKAGE_PIN B18  IOSTANDARD LVCMOS33} [get_ports {sd2_miso_i}];             # SD2_D0
-set_property -dict {PACKAGE_PIN B16  IOSTANDARD LVCMOS33} [get_ports {sd2_mosi_o}];             # SD2_CMD
-set_property -dict {PACKAGE_PIN B15  IOSTANDARD LVCMOS33} [get_ports {sd2_reset_o}];            # SD2_D3
-set_property -dict {PACKAGE_PIN C17  IOSTANDARD LVCMOS33} [get_ports {sd2_wp_i}];               # SD2_WP
-set_property -dict {PACKAGE_PIN C18  IOSTANDARD LVCMOS33} [get_ports {sd2_d1_i}];               # SD2_D1
-set_property -dict {PACKAGE_PIN C19  IOSTANDARD LVCMOS33} [get_ports {sd2_d2_i}];               # SD2_D2
+   -- Micro SD Connector (external slot at back of the cover)
+   sd_reset_o              : out   std_logic;
+   sd_clk_o                : out   std_logic;
+   sd_mosi_o               : out   std_logic;
+   sd_miso_i               : in    std_logic;
+   sd_cd_i                 : in    std_logic;
+   sd_d1_i                 : in    std_logic;
+   sd_d2_i                 : in    std_logic;
 
-# Audio DAC. U37 = AK4432VT
-# I2C address: 0x19.
-set_property -dict {PACKAGE_PIN D16  IOSTANDARD LVCMOS33} [get_ports {audio_mclk_o}];           # AUDIO_MCLK
-set_property -dict {PACKAGE_PIN E19  IOSTANDARD LVCMOS33} [get_ports {audio_bick_o}];           # AUDIO_BCLK
-set_property -dict {PACKAGE_PIN E16  IOSTANDARD LVCMOS33} [get_ports {audio_sdti_o}];           # AUDIO_SDATA
-set_property -dict {PACKAGE_PIN F19  IOSTANDARD LVCMOS33} [get_ports {audio_lrclk_o}];          # AUDIO_LRCLK
-set_property -dict {PACKAGE_PIN F18  IOSTANDARD LVCMOS33} [get_ports {audio_pdn_n_o}];          # nSD_AUDIO
-set_property -dict {PACKAGE_PIN F4   IOSTANDARD LVCMOS33} [get_ports {audio_i2cfil_o}];         # AUDIO1
-set_property -dict {PACKAGE_PIN L6   IOSTANDARD LVCMOS33} [get_ports {audio_scl_io}];           # AUDIO2
-set_property -dict {PACKAGE_PIN W9   IOSTANDARD LVCMOS33} [get_ports {audio_sda_io}];           # AUDIO3
+   -- SD Connector (this is the slot at the bottom side of the case under the cover)
+   sd2_reset_o             : out   std_logic;
+   sd2_clk_o               : out   std_logic;
+   sd2_mosi_o              : out   std_logic;
+   sd2_miso_i              : in    std_logic;
+   sd2_cd_i                : in    std_logic;
+   sd2_wp_i                : in    std_logic;
+   sd2_d1_i                : in    std_logic;
+   sd2_d2_i                : in    std_logic;
 
-# Joystick
-set_property -dict {PACKAGE_PIN F16  IOSTANDARD LVCMOS33} [get_ports {fa_down_n_i}];            # FA_DOWN
-set_property -dict {PACKAGE_PIN E17  IOSTANDARD LVCMOS33} [get_ports {fa_fire_n_i}];            # FA_FIRE
-set_property -dict {PACKAGE_PIN F14  IOSTANDARD LVCMOS33} [get_ports {fa_left_n_i}];            # FA_LEFT
-set_property -dict {PACKAGE_PIN F13  IOSTANDARD LVCMOS33} [get_ports {fa_right_n_i}];           # FA_RIGHT
-set_property -dict {PACKAGE_PIN C14  IOSTANDARD LVCMOS33} [get_ports {fa_up_n_i}];              # FA_UP
-set_property -dict {PACKAGE_PIN P17  IOSTANDARD LVCMOS33} [get_ports {fb_down_n_i}];            # FB_DOWN
-set_property -dict {PACKAGE_PIN F15  IOSTANDARD LVCMOS33} [get_ports {fb_fire_n_i}];            # FB_FIRE
-set_property -dict {PACKAGE_PIN F21  IOSTANDARD LVCMOS33} [get_ports {fb_left_n_i}];            # FB_LEFT
-set_property -dict {PACKAGE_PIN C15  IOSTANDARD LVCMOS33} [get_ports {fb_right_n_i}];           # FB_RIGHT
-set_property -dict {PACKAGE_PIN W19  IOSTANDARD LVCMOS33} [get_ports {fb_up_n_i}];              # FB_UP
+   -- Audio DAC. U37 = AK4432VT
+   -- I2C address 0x19
+   audio_mclk_o            : out   std_logic;   -- Master Clock Input Pin,       12.288 MHz
+   audio_bick_o            : out   std_logic;   -- Audio Serial Data Clock Pin,   3.072 MHz
+   audio_sdti_o            : out   std_logic;   -- Audio Serial Data Input Pin,  16-bit LSB justified
+   audio_lrclk_o           : out   std_logic;   -- Input Channel Clock Pin,      48.0 kHz
+   audio_pdn_n_o           : out   std_logic;   -- Power-Down & Reset Pin
+   audio_i2cfil_o          : out   std_logic;   -- I2C Interface Mode Select Pin
+   audio_scl_io            : inout std_logic;   -- Control Data Clock Input Pin
+   audio_sda_io            : inout std_logic;   -- Control Data Input/Output Pin
 
-# Paddles
-set_property -dict {PACKAGE_PIN H22  IOSTANDARD LVCMOS33} [get_ports {paddle_drain_o}];         # Pulse-discharge
-set_property -dict {PACKAGE_PIN H13  IOSTANDARD LVCMOS33} [get_ports {paddle_i[0]}];            # CP0
-set_property -dict {PACKAGE_PIN G15  IOSTANDARD LVCMOS33} [get_ports {paddle_i[1]}];            # CP1
-set_property -dict {PACKAGE_PIN J14  IOSTANDARD LVCMOS33} [get_ports {paddle_i[2]}];            # CP2
-set_property -dict {PACKAGE_PIN J22  IOSTANDARD LVCMOS33} [get_ports {paddle_i[3]}];            # CP3
+   -- Joysticks and Paddles
+   fa_up_n_i               : in    std_logic;
+   fa_down_n_i             : in    std_logic;
+   fa_left_n_i             : in    std_logic;
+   fa_right_n_i            : in    std_logic;
+   fa_fire_n_i             : in    std_logic;
+   fa_fire_n_o             : out   std_logic;   -- 0: Drive pin low (output). 1: Leave pin floating (input)
+   fa_up_n_o               : out   std_logic;
+   fa_left_n_o             : out   std_logic;
+   fa_down_n_o             : out   std_logic;
+   fa_right_n_o            : out   std_logic;
+   fb_up_n_i               : in    std_logic;
+   fb_down_n_i             : in    std_logic;
+   fb_left_n_i             : in    std_logic;
+   fb_right_n_i            : in    std_logic;
+   fb_fire_n_i             : in    std_logic;
+   fb_up_n_o               : out   std_logic;
+   fb_down_n_o             : out   std_logic;
+   fb_fire_n_o             : out   std_logic;
+   fb_right_n_o            : out   std_logic;
+   fb_left_n_o             : out   std_logic;
 
-# HyperRAM. U29 = IS66WVH8M8DBLL-100B1LI
-set_property -dict {PACKAGE_PIN D22  IOSTANDARD LVCMOS33} [get_ports {hr_clk_p_o}];             # H_CLK
-set_property -dict {PACKAGE_PIN C22  IOSTANDARD LVCMOS33} [get_ports {hr_cs0_o}];               # CS0
-set_property -dict {PACKAGE_PIN A21  IOSTANDARD LVCMOS33} [get_ports {hr_d_io[0]}];             # DQ0
-set_property -dict {PACKAGE_PIN D21  IOSTANDARD LVCMOS33} [get_ports {hr_d_io[1]}];             # DQ1
-set_property -dict {PACKAGE_PIN C20  IOSTANDARD LVCMOS33} [get_ports {hr_d_io[2]}];             # DQ2
-set_property -dict {PACKAGE_PIN A20  IOSTANDARD LVCMOS33} [get_ports {hr_d_io[3]}];             # DQ3
-set_property -dict {PACKAGE_PIN B20  IOSTANDARD LVCMOS33} [get_ports {hr_d_io[4]}];             # DQ4
-set_property -dict {PACKAGE_PIN A19  IOSTANDARD LVCMOS33} [get_ports {hr_d_io[5]}];             # DQ5
-set_property -dict {PACKAGE_PIN E21  IOSTANDARD LVCMOS33} [get_ports {hr_d_io[6]}];             # DQ6
-set_property -dict {PACKAGE_PIN E22  IOSTANDARD LVCMOS33} [get_ports {hr_d_io[7]}];             # DQ7
-set_property -dict {PACKAGE_PIN B22  IOSTANDARD LVCMOS33} [get_ports {hr_reset_o}];             # H_RES
-set_property -dict {PACKAGE_PIN B21  IOSTANDARD LVCMOS33} [get_ports {hr_rwds_io}];             # RWDS
-set_property -dict {PULLTYPE {}        SLEW FAST  DRIVE 16} [get_ports {hr_reset_o}];
-set_property -dict {PULLTYPE {}        SLEW FAST  DRIVE 16} [get_ports {hr_cs0_o}];
-set_property -dict {PULLTYPE {}        SLEW FAST  DRIVE 16} [get_ports {hr_clk_p_o}];
-set_property -dict {PULLTYPE {}        SLEW FAST  DRIVE 16} [get_ports {hr_d_io[*]}];
-set_property -dict {PULLTYPE PULLDOWN  SLEW FAST  DRIVE 16} [get_ports {hr_rwds_io}];
+   -- Joystick power supply
+   joystick_5v_disable_o   : out   std_logic;  -- 1: Disable 5V power supply to joysticks
+   joystick_5v_powergood_i : in    std_logic;
 
-# CBM-488/IEC serial port
-set_property -dict {PACKAGE_PIN N17  IOSTANDARD LVCMOS33} [get_ports {iec_atn_n_o}];            # F_SER_ATN
-set_property -dict {PACKAGE_PIN AA21 IOSTANDARD LVCMOS33} [get_ports {iec_clk_en_n_o}];         # F_SER_CLK_EN. Active low
-set_property -dict {PACKAGE_PIN Y18  IOSTANDARD LVCMOS33} [get_ports {iec_clk_n_i}];            # F_SER_CLK_I
-set_property -dict {PACKAGE_PIN Y19  IOSTANDARD LVCMOS33} [get_ports {iec_clk_n_o}];            # F_SER_CLK_O
-set_property -dict {PACKAGE_PIN Y21  IOSTANDARD LVCMOS33} [get_ports {iec_data_en_n_o}];        # F_SER_DATA_EN. Active low
-set_property -dict {PACKAGE_PIN AB22 IOSTANDARD LVCMOS33} [get_ports {iec_data_n_i}];           # F_SER_DATA_I
-set_property -dict {PACKAGE_PIN Y22  IOSTANDARD LVCMOS33} [get_ports {iec_data_n_o}];           # F_SER_DATA_O
-set_property -dict {PACKAGE_PIN AB21 IOSTANDARD LVCMOS33} [get_ports {iec_reset_n_o}];          # F_SER_RESET
-set_property -dict {PACKAGE_PIN AB20 IOSTANDARD LVCMOS33} [get_ports {iec_srq_en_n_o}];         # F_SER_SRQ_EN. Active low
-set_property -dict {PACKAGE_PIN AA18 IOSTANDARD LVCMOS33} [get_ports {iec_srq_n_i}];            # F_SER_SRQ_I
-set_property -dict {PACKAGE_PIN U20  IOSTANDARD LVCMOS33} [get_ports {iec_srq_n_o}];            # F_SER_SRQ_O
-set_property -dict {PULLUP TRUE}                          [get_ports {iec_clk_n_i}];
-set_property -dict {PULLUP TRUE}                          [get_ports {iec_data_n_i}];
+   paddle_i                : in    std_logic_vector(3 downto 0);
+   paddle_drain_o          : out   std_logic;
 
-# C64 Expansion Port (aka Cartridge Port)
-set_property -dict {PACKAGE_PIN V17  IOSTANDARD LVCMOS33} [get_ports {cart_phi2_o}];            # F_C64_O2
-set_property -dict {PACKAGE_PIN AA19 IOSTANDARD LVCMOS33} [get_ports {cart_dotclock_o}];        # F_C64_CLOCK
-set_property -dict {PACKAGE_PIN P15  IOSTANDARD LVCMOS33} [get_ports {cart_dma_i}];             # F_C64_DMA
-set_property -dict {PACKAGE_PIN T20  IOSTANDARD LVCMOS33} [get_ports {cart_reset_oe_n_o}];      # F_C64_RESET_EN
-set_property -dict {PACKAGE_PIN N14  IOSTANDARD LVCMOS33} [get_ports {cart_reset_io}];          # F_C64_RESET
-set_property -dict {PACKAGE_PIN L15  IOSTANDARD LVCMOS33} [get_ports {cart_game_oe_n_o}];       # F_C64_GAME_EN
-set_property -dict {PACKAGE_PIN W22  IOSTANDARD LVCMOS33} [get_ports {cart_game_io}];           #_F_C64_GAME
-set_property -dict {PACKAGE_PIN M16  IOSTANDARD LVCMOS33} [get_ports {cart_exrom_oe_n_o}];      # F_C64_EXROM_EN
-set_property -dict {PACKAGE_PIN R19  IOSTANDARD LVCMOS33} [get_ports {cart_exrom_io}];          # F_C64_EXROM
-set_property -dict {PACKAGE_PIN F20  IOSTANDARD LVCMOS33} [get_ports {cart_nmi_oe_n_o}];        # F_C64_NMI_EN
-set_property -dict {PACKAGE_PIN W17  IOSTANDARD LVCMOS33} [get_ports {cart_nmi_io}];            # F_C64_NMI
-set_property -dict {PACKAGE_PIN H14  IOSTANDARD LVCMOS33} [get_ports {cart_irq_oe_n_o}];        # F_C64_IRQ_EN
-set_property -dict {PACKAGE_PIN P14  IOSTANDARD LVCMOS33} [get_ports {cart_irq_io}];            # F_C64_IRQ
-set_property -dict {PACKAGE_PIN G18  IOSTANDARD LVCMOS33} [get_ports {cart_ctrl_en_o}];         # F_CTRL_EN
-set_property -dict {PACKAGE_PIN U17  IOSTANDARD LVCMOS33} [get_ports {cart_ctrl_dir_o}];        # F_CTRL_DIR
-set_property -dict {PACKAGE_PIN N13  IOSTANDARD LVCMOS33} [get_ports {cart_ba_io}];             # F_C64_BA
-set_property -dict {PACKAGE_PIN R18  IOSTANDARD LVCMOS33} [get_ports {cart_rw_io}];             # F_C64_RW
-set_property -dict {PACKAGE_PIN N15  IOSTANDARD LVCMOS33} [get_ports {cart_io1_io}];            # F_C64_IO1
-set_property -dict {PACKAGE_PIN AA20 IOSTANDARD LVCMOS33} [get_ports {cart_io2_io}];            # F_C64_IO2
-set_property -dict {PACKAGE_PIN T16  IOSTANDARD LVCMOS33} [get_ports {cart_romh_oe_n_o}];       # F_C64_ROMH_DIR
-set_property -dict {PACKAGE_PIN T18  IOSTANDARD LVCMOS33} [get_ports {cart_romh_io}];           # F_C64_ROMH
-set_property -dict {PACKAGE_PIN U16  IOSTANDARD LVCMOS33} [get_ports {cart_roml_oe_n_o}];       # F_C64_ROML_DIR
-set_property -dict {PACKAGE_PIN AB18 IOSTANDARD LVCMOS33} [get_ports {cart_roml_io}];           # F_C64_ROML
-set_property -dict {PACKAGE_PIN T21  IOSTANDARD LVCMOS33} [get_ports {cart_en_o}];              # EXP_SLOT_EN
-set_property -dict {PACKAGE_PIN L19  IOSTANDARD LVCMOS33} [get_ports {cart_addr_en_o}];         # F_ADDR_EN
-set_property -dict {PACKAGE_PIN L18  IOSTANDARD LVCMOS33} [get_ports {cart_haddr_dir_o}];       # F_HADDR_DIR
-set_property -dict {PACKAGE_PIN L21  IOSTANDARD LVCMOS33} [get_ports {cart_laddr_dir_o}];       # F_LADDR_DIR
-set_property -dict {PACKAGE_PIN K19  IOSTANDARD LVCMOS33} [get_ports {cart_a_io[0]}];           # F_C64_A0
-set_property -dict {PACKAGE_PIN K18  IOSTANDARD LVCMOS33} [get_ports {cart_a_io[1]}];           # F_C64_A1
-set_property -dict {PACKAGE_PIN K21  IOSTANDARD LVCMOS33} [get_ports {cart_a_io[2]}];           # F_C64_A2
-set_property -dict {PACKAGE_PIN M22  IOSTANDARD LVCMOS33} [get_ports {cart_a_io[3]}];           # F_C64_A3
-set_property -dict {PACKAGE_PIN L20  IOSTANDARD LVCMOS33} [get_ports {cart_a_io[4]}];           # F_C64_A4
-set_property -dict {PACKAGE_PIN J20  IOSTANDARD LVCMOS33} [get_ports {cart_a_io[5]}];           # F_C64_A5
-set_property -dict {PACKAGE_PIN J21  IOSTANDARD LVCMOS33} [get_ports {cart_a_io[6]}];           # F_C64_A6
-set_property -dict {PACKAGE_PIN K22  IOSTANDARD LVCMOS33} [get_ports {cart_a_io[7]}];           # F_C64_A7
-set_property -dict {PACKAGE_PIN H17  IOSTANDARD LVCMOS33} [get_ports {cart_a_io[8]}];           # F_C64_A8
-set_property -dict {PACKAGE_PIN H20  IOSTANDARD LVCMOS33} [get_ports {cart_a_io[9]}];           # F_C64_A9
-set_property -dict {PACKAGE_PIN G20  IOSTANDARD LVCMOS33} [get_ports {cart_a_io[10]}];          # F_C64_A10
-set_property -dict {PACKAGE_PIN J15  IOSTANDARD LVCMOS33} [get_ports {cart_a_io[11]}];          # F_C64_A11
-set_property -dict {PACKAGE_PIN H19  IOSTANDARD LVCMOS33} [get_ports {cart_a_io[12]}];          # F_C64_A12
-set_property -dict {PACKAGE_PIN M20  IOSTANDARD LVCMOS33} [get_ports {cart_a_io[13]}];          # F_C64_A13
-set_property -dict {PACKAGE_PIN N22  IOSTANDARD LVCMOS33} [get_ports {cart_a_io[14]}];          # F_C64_A14
-set_property -dict {PACKAGE_PIN H18  IOSTANDARD LVCMOS33} [get_ports {cart_a_io[15]}];          # F_C64_A15
-set_property -dict {PACKAGE_PIN U21  IOSTANDARD LVCMOS33} [get_ports {cart_data_en_o}];         # F_DATA_EN
-set_property -dict {PACKAGE_PIN V22  IOSTANDARD LVCMOS33} [get_ports {cart_data_dir_o}];        # F_DATA_DIR
-set_property -dict {PACKAGE_PIN P16  IOSTANDARD LVCMOS33} [get_ports {cart_d_io[0]}];           # F_C64_D0
-set_property -dict {PACKAGE_PIN R17  IOSTANDARD LVCMOS33} [get_ports {cart_d_io[1]}];           # F_C64_D1
-set_property -dict {PACKAGE_PIN P20  IOSTANDARD LVCMOS33} [get_ports {cart_d_io[2]}];           # F_C64_D2
-set_property -dict {PACKAGE_PIN R16  IOSTANDARD LVCMOS33} [get_ports {cart_d_io[3]}];           # F_C64_D3
-set_property -dict {PACKAGE_PIN U18  IOSTANDARD LVCMOS33} [get_ports {cart_d_io[4]}];           # F_C64_D4
-set_property -dict {PACKAGE_PIN V18  IOSTANDARD LVCMOS33} [get_ports {cart_d_io[5]}];           # F_C64_D5
-set_property -dict {PACKAGE_PIN W20  IOSTANDARD LVCMOS33} [get_ports {cart_d_io[6]}];           # F_C64_D6
-set_property -dict {PACKAGE_PIN W21  IOSTANDARD LVCMOS33} [get_ports {cart_d_io[7]}];           # F_C64_D7
+   -- HyperRAM. U29 = IS66WVH8M8DBLL-100B1LI
+   hr_d_io                 : inout std_logic_vector(7 downto 0);
+   hr_rwds_io              : inout std_logic;
+   hr_reset_o              : out   std_logic;
+   hr_clk_p_o              : out   std_logic;
+   hr_cs0_o                : out   std_logic;
 
-# I2C bus
-# U32 = PCA9655EMTTXG. Address 0x40. I/O expander.
-# U12 = MP8869SGL-Z.   Address 0x61. DC/DC Converter.
-# U14 = MP8869SGL-Z.   Address 0x67. DC/DC Converter.
-set_property -dict {PACKAGE_PIN N18  IOSTANDARD LVCMOS33} [get_ports {i2c_scl_io}];             # I2C_SCL
-set_property -dict {PACKAGE_PIN P19  IOSTANDARD LVCMOS33} [get_ports {i2c_sda_io}];             # I2C_SDA
+   -- CBM-488/IEC serial port
+   iec_reset_n_o           : out   std_logic;
+   iec_atn_n_o             : out   std_logic;
+   iec_clk_en_n_o          : out   std_logic;
+   iec_clk_n_i             : in    std_logic;
+   iec_clk_n_o             : out   std_logic;
+   iec_data_en_n_o         : out   std_logic;
+   iec_data_n_i            : in    std_logic;
+   iec_data_n_o            : out   std_logic;
+   iec_srq_en_n_o          : out   std_logic;
+   iec_srq_n_i             : in    std_logic;
+   iec_srq_n_o             : out   std_logic;
 
-# Debug. Also used to control output to joystick ??
-set_property -dict {PACKAGE_PIN J17  IOSTANDARD LVCMOS33} [get_ports {fa_fire_n_o}];            # DBG0 = FA_FIRE_O
-set_property -dict {PACKAGE_PIN G16  IOSTANDARD LVCMOS33} [get_ports {fa_up_n_o}];              # DBG1 = FA_UP_O
-set_property -dict {PACKAGE_PIN K13  IOSTANDARD LVCMOS33} [get_ports {fa_left_n_o}];            # DBG2 = FA_LEFT_O
-set_property -dict {PACKAGE_PIN K14  IOSTANDARD LVCMOS33} [get_ports {fa_down_n_o}];            # DBG3 = FA_DOWN_O
-set_property -dict {PACKAGE_PIN N20  IOSTANDARD LVCMOS33} [get_ports {fb_up_n_o}];              # DBG4 = FB_UP_O
-set_property -dict {PACKAGE_PIN L16  IOSTANDARD LVCMOS33} [get_ports {fa_right_n_o}];           # DBG5 = FA_RIGHT_O
-set_property -dict {PACKAGE_PIN M18  IOSTANDARD LVCMOS33} [get_ports {fb_down_n_o}];            # DBG6 = FB_DOWN_O
-set_property -dict {PACKAGE_PIN N19  IOSTANDARD LVCMOS33} [get_ports {fb_fire_n_o}];            # DBG7 = FB_FIRE_O
-set_property -dict {PACKAGE_PIN E18  IOSTANDARD LVCMOS33} [get_ports {fb_right_n_o}];           # DBG8 = FB_RIGHT_O
-set_property -dict {PACKAGE_PIN M17  IOSTANDARD LVCMOS33} [get_ports {fb_left_n_o}];            # DBG9 = FB_LEFT_O
-set_property -dict {PACKAGE_PIN G13  IOSTANDARD LVCMOS33} [get_ports {dbg_io_11}];              # DBG11
+   -- C64 Expansion Port (aka Cartridge Port)
+   cart_phi2_o             : out   std_logic;
+   cart_dotclock_o         : out   std_logic;
+   cart_dma_i              : in    std_logic;
+   cart_reset_oe_n_o       : out   std_logic;
+   cart_reset_io           : inout std_logic;
+   cart_game_oe_n_o        : out   std_logic;
+   cart_game_io            : inout std_logic;
+   cart_exrom_oe_n_o       : out   std_logic;
+   cart_exrom_io           : inout std_logic;
+   cart_nmi_oe_n_o         : out   std_logic;
+   cart_nmi_io             : inout std_logic;
+   cart_irq_oe_n_o         : out   std_logic;
+   cart_irq_io             : inout std_logic;
+   cart_ctrl_en_o          : out   std_logic;
+   cart_ctrl_dir_o         : out   std_logic;                  -- =1 means FPGA->Port, =0 means Port->FPGA
+   cart_ba_io              : inout std_logic;
+   cart_rw_io              : inout std_logic;
+   cart_io1_io             : inout std_logic;
+   cart_io2_io             : inout std_logic;
+   cart_romh_oe_n_o        : out   std_logic;
+   cart_romh_io            : inout std_logic;
+   cart_roml_oe_n_o        : out   std_logic;
+   cart_roml_io            : inout std_logic;
+   cart_en_o               : out   std_logic;
+   cart_addr_en_o          : out   std_logic;
+   cart_haddr_dir_o        : out   std_logic;                  -- =1 means FPGA->Port, =0 means Port->FPGA
+   cart_laddr_dir_o        : out   std_logic;                  -- =1 means FPGA->Port, =0 means Port->FPGA
+   cart_a_io               : inout unsigned(15 downto 0);
+   cart_data_en_o          : out   std_logic;
+   cart_data_dir_o         : out   std_logic;                  -- =1 means FPGA->Port, =0 means Port->FPGA
+   cart_d_io               : inout unsigned(7 downto 0);
 
-# SMSC Ethernet PHY. U4 = KSZ8081RNDCA
-set_property -dict {PACKAGE_PIN L4   IOSTANDARD LVCMOS33} [get_ports {eth_clock_o}];            # ETH_CLK
-set_property -dict {PACKAGE_PIN R14  IOSTANDARD LVCMOS33} [get_ports {eth_led2_o}];             # ETH_LED2
-set_property -dict {PACKAGE_PIN J6   IOSTANDARD LVCMOS33} [get_ports {eth_mdc_o}];              # ETH_MDC
-set_property -dict {PACKAGE_PIN L5   IOSTANDARD LVCMOS33} [get_ports {eth_mdio_io}];            # ETH_MDIO
-set_property -dict {PACKAGE_PIN K6   IOSTANDARD LVCMOS33} [get_ports {eth_reset_o}];            # ETH-RST
-set_property -dict {PACKAGE_PIN P4   IOSTANDARD LVCMOS33} [get_ports {eth_rxd_i[0]}];           # ETH_RX_D0
-set_property -dict {PACKAGE_PIN L1   IOSTANDARD LVCMOS33} [get_ports {eth_rxd_i[1]}];           # ETH_RX_D1
-set_property -dict {PACKAGE_PIN K4   IOSTANDARD LVCMOS33} [get_ports {eth_rxdv_i}];             # ETH_CRS_DV
-set_property -dict {PACKAGE_PIN M6   IOSTANDARD LVCMOS33} [get_ports {eth_rxer_i}];             # ETH_RXER
-set_property -dict {PACKAGE_PIN L3   IOSTANDARD LVCMOS33} [get_ports {eth_txd_o[0]}];           # ETH_TX_D0
-set_property -dict {PACKAGE_PIN K3   IOSTANDARD LVCMOS33} [get_ports {eth_txd_o[1]}];           # ETH_TX_D1
-set_property -dict {PACKAGE_PIN J4   IOSTANDARD LVCMOS33} [get_ports {eth_txen_o}];             # ETH_TX_EN
-set_property -dict {SLEW SLOW  DRIVE 4}                   [get_ports {eth_txd_o[*]}];
-set_property -dict {SLEW SLOW  DRIVE 4}                   [get_ports {eth_txen_o}];
-set_property -dict {SLEW FAST}                            [get_ports {eth_clock_o}];
+   -- The remaining ports are not supported
 
-# FDC interface
-set_property -dict {PACKAGE_PIN P6   IOSTANDARD LVCMOS33} [get_ports {f_density_o}];            # F_REDWC
-set_property -dict {PACKAGE_PIN R1   IOSTANDARD LVCMOS33} [get_ports {f_diskchanged_i}];        # F_DSCKCHG
-set_property -dict {PACKAGE_PIN M2   IOSTANDARD LVCMOS33} [get_ports {f_index_i}];              # F_INDEX
-set_property -dict {PACKAGE_PIN M5   IOSTANDARD LVCMOS33} [get_ports {f_motora_o}];             # F_MOTEA
-set_property -dict {PACKAGE_PIN H15  IOSTANDARD LVCMOS33} [get_ports {f_motorb_o}];             # F_MOTEB
-set_property -dict {PACKAGE_PIN P1   IOSTANDARD LVCMOS33} [get_ports {f_rdata_i}];              # F_RDATA1
-set_property -dict {PACKAGE_PIN N5   IOSTANDARD LVCMOS33} [get_ports {f_selecta_o}];            # F_DRVSA
-set_property -dict {PACKAGE_PIN G17  IOSTANDARD LVCMOS33} [get_ports {f_selectb_o}];            # F_DRVSB
-set_property -dict {PACKAGE_PIN M1   IOSTANDARD LVCMOS33} [get_ports {f_side1_o}];              # F_SIDE1
-set_property -dict {PACKAGE_PIN P5   IOSTANDARD LVCMOS33} [get_ports {f_stepdir_o}];            # F_DIR
-set_property -dict {PACKAGE_PIN M3   IOSTANDARD LVCMOS33} [get_ports {f_step_o}];               # F_STEP
-set_property -dict {PACKAGE_PIN N2   IOSTANDARD LVCMOS33} [get_ports {f_track0_i}];             # F_TRCK0
-set_property -dict {PACKAGE_PIN N4   IOSTANDARD LVCMOS33} [get_ports {f_wdata_o}];              # F_WDATE
-set_property -dict {PACKAGE_PIN N3   IOSTANDARD LVCMOS33} [get_ports {f_wgate_o}];              # F_WGATE
-set_property -dict {PACKAGE_PIN P2   IOSTANDARD LVCMOS33} [get_ports {f_writeprotect_i}];       # F_WPT
+   -- SMSC Ethernet PHY. U4 = KSZ8081RNDCA
+   eth_clock_o             : out   std_logic;
+   eth_led2_o              : out   std_logic;
+   eth_mdc_o               : out   std_logic;
+   eth_mdio_io             : inout std_logic;
+   eth_reset_o             : out   std_logic;
+   eth_rxd_i               : in    std_logic_vector(1 downto 0);
+   eth_rxdv_i              : in    std_logic;
+   eth_rxer_i              : in    std_logic;
+   eth_txd_o               : out   std_logic_vector(1 downto 0);
+   eth_txen_o              : out   std_logic;
 
-# I2C bus for on-board peripherals
-# U36. 24AA025E48T. Address 0x50. 2K Serial EEPROM.
-# U38. RV-3032-C7.  Address 0x51. Real-Time Clock Module.
-# U39. 24LC128.     Address 0x56. 128K CMOS Serial EEPROM.
-set_property -dict {PACKAGE_PIN A15  IOSTANDARD LVCMOS33} [get_ports {fpga_scl_io}];            # FPGA_SCL
-set_property -dict {PACKAGE_PIN A16  IOSTANDARD LVCMOS33} [get_ports {fpga_sda_io}];            # FPGA_SDA
+   -- FDC interface
+   f_density_o             : out   std_logic;
+   f_diskchanged_i         : in    std_logic;
+   f_index_i               : in    std_logic;
+   f_motora_o              : out   std_logic;
+   f_motorb_o              : out   std_logic;
+   f_rdata_i               : in    std_logic;
+   f_selecta_o             : out   std_logic;
+   f_selectb_o             : out   std_logic;
+   f_side1_o               : out   std_logic;
+   f_stepdir_o             : out   std_logic;
+   f_step_o                : out   std_logic;
+   f_track0_i              : in    std_logic;
+   f_wdata_o               : out   std_logic;
+   f_wgate_o               : out   std_logic;
+   f_writeprotect_i        : in    std_logic;
 
-# Connected to J18.
-set_property -dict {PACKAGE_PIN G21  IOSTANDARD LVCMOS33} [get_ports {grove_scl_io}];           # Grove_SCL0
-set_property -dict {PACKAGE_PIN G22  IOSTANDARD LVCMOS33} [get_ports {grove_sda_io}];           # Grove_SDA0
+   -- I2C bus for on-board peripherals
+   -- U36. 24AA025E48T. Address 0x50. 2K Serial EEPROM.
+   -- U38. RV-3032-C7.  Address 0x51. Real-Time Clock Module.
+   -- U39. 24LC128.     Address 0x56. 128K CMOS Serial EEPROM.
+   fpga_sda_io             : inout std_logic;
+   fpga_scl_io             : inout std_logic;
 
-# Joystick power supply
-set_property -dict {PACKAGE_PIN D19  IOSTANDARD LVCMOS33} [get_ports {joystick_5v_disable_o}];  # EN_5V_JOY_N
-set_property -dict {PACKAGE_PIN D20  IOSTANDARD LVCMOS33} [get_ports {joystick_5v_powergood_i}]; # 5V_JOY_PG
+   -- Connected to J18
+   grove_sda_io            : inout std_logic;
+   grove_scl_io            : inout std_logic;
 
-# On board LEDs
-set_property -dict {PACKAGE_PIN V19  IOSTANDARD LVCMOS33} [get_ports {led_g_n_o}];              # LED_G
-set_property -dict {PACKAGE_PIN U22  IOSTANDARD LVCMOS33} [get_ports {led_o}];                  # ULED
-set_property -dict {PACKAGE_PIN V20  IOSTANDARD LVCMOS33} [get_ports {led_r_n_o}];              # LED_R
+   -- On board LEDs
+   led_g_n_o               : out   std_logic;
+   led_r_n_o               : out   std_logic;
+   led_o                   : out   std_logic;
 
-# Pmod Header
-set_property -dict {PACKAGE_PIN A18  IOSTANDARD LVCMOS33} [get_ports {p1hi_io[0]}];             # B16_L17_P
-set_property -dict {PACKAGE_PIN E1   IOSTANDARD LVCMOS33} [get_ports {p1hi_io[1]}];             # B35_L3_P
-set_property -dict {PACKAGE_PIN C2   IOSTANDARD LVCMOS33} [get_ports {p1hi_io[2]}];             # B35_L2_P
-set_property -dict {PACKAGE_PIN B1   IOSTANDARD LVCMOS33} [get_ports {p1hi_io[3]}];             # B35_L1_P
-set_property -dict {PACKAGE_PIN F1   IOSTANDARD LVCMOS33} [get_ports {p1lo_io[0]}];             # B35_L5_N
-set_property -dict {PACKAGE_PIN D1   IOSTANDARD LVCMOS33} [get_ports {p1lo_io[1]}];             # B35_L3_N
-set_property -dict {PACKAGE_PIN B2   IOSTANDARD LVCMOS33} [get_ports {p1lo_io[2]}];             # B35_L2_N
-set_property -dict {PACKAGE_PIN A1   IOSTANDARD LVCMOS33} [get_ports {p1lo_io[3]}];             # B35_L1_N
-set_property -dict {PACKAGE_PIN E2   IOSTANDARD LVCMOS33} [get_ports {p2hi_io[0]}];             # B35_L4_P
-set_property -dict {PACKAGE_PIN D2   IOSTANDARD LVCMOS33} [get_ports {p2hi_io[1]}];             # B35_L4_N
-set_property -dict {PACKAGE_PIN G4   IOSTANDARD LVCMOS33} [get_ports {p2hi_io[2]}];             # B35_L12_N
-set_property -dict {PACKAGE_PIN J5   IOSTANDARD LVCMOS33} [get_ports {p2hi_io[3]}];             # B35_L10_P
-set_property -dict {PACKAGE_PIN F3   IOSTANDARD LVCMOS33} [get_ports {p2lo_io[0]}];             # B35_L6_P
-set_property -dict {PACKAGE_PIN E3   IOSTANDARD LVCMOS33} [get_ports {p2lo_io[1]}];             # B35_L6_N
-set_property -dict {PACKAGE_PIN H4   IOSTANDARD LVCMOS33} [get_ports {p2lo_io[2]}];             # B35_L12_P
-set_property -dict {PACKAGE_PIN H5   IOSTANDARD LVCMOS33} [get_ports {p2lo_io[3]}];             # B35_L10_N
-set_property -dict {PACKAGE_PIN J16  IOSTANDARD LVCMOS33} [get_ports {pmod1_en_o}];             # PMOD1_EN
-set_property -dict {PACKAGE_PIN K16  IOSTANDARD LVCMOS33} [get_ports {pmod1_flag_i}];           # PMOD1_FLG
-set_property -dict {PACKAGE_PIN M13  IOSTANDARD LVCMOS33} [get_ports {pmod2_en_o}];             # PMOD2_EN
-set_property -dict {PACKAGE_PIN K17  IOSTANDARD LVCMOS33} [get_ports {pmod2_flag_i}];           # PMOD2_FLG
+   -- Pmod Header
+   p1lo_io                 : inout std_logic_vector(3 downto 0);
+   p1hi_io                 : inout std_logic_vector(3 downto 0);
+   p2lo_io                 : inout std_logic_vector(3 downto 0);
+   p2hi_io                 : inout std_logic_vector(3 downto 0);
+   pmod1_en_o              : out   std_logic;
+   pmod1_flag_i            : in    std_logic;
+   pmod2_en_o              : out   std_logic;
+   pmod2_flag_i            : in    std_logic;
 
-# Quad SPI Flash. U5 = S25FL512SAGBHIS10
-set_property -dict {PACKAGE_PIN T19  IOSTANDARD LVCMOS33} [get_ports {qspicsn_o}];              # SPI-CS
-set_property -dict {PACKAGE_PIN P22  IOSTANDARD LVCMOS33} [get_ports {qspidb_io[0]}];           # SPI-DQ0
-set_property -dict {PACKAGE_PIN R22  IOSTANDARD LVCMOS33} [get_ports {qspidb_io[1]}];           # SPI-DQ1
-set_property -dict {PACKAGE_PIN P21  IOSTANDARD LVCMOS33} [get_ports {qspidb_io[2]}];           # SPI-DQ2
-set_property -dict {PACKAGE_PIN R21  IOSTANDARD LVCMOS33} [get_ports {qspidb_io[3]}];           # SPI-DQ3
-set_property -dict {PULLUP TRUE}                          [get_ports {qspidb_io[*]}];
-
-# SDRAM - 32M x 16 bit, 3.3V VCC. U44 = IS42S16320F-6BL
-set_property -dict {PACKAGE_PIN T4   IOSTANDARD LVCMOS33} [get_ports {sdram_a_o[0]}];           # SDRAM_A0
-set_property -dict {PACKAGE_PIN R2   IOSTANDARD LVCMOS33} [get_ports {sdram_a_o[1]}];           # SDRAM_A1
-set_property -dict {PACKAGE_PIN R3   IOSTANDARD LVCMOS33} [get_ports {sdram_a_o[2]}];           # SDRAM_A2
-set_property -dict {PACKAGE_PIN T3   IOSTANDARD LVCMOS33} [get_ports {sdram_a_o[3]}];           # SDRAM_A3
-set_property -dict {PACKAGE_PIN Y4   IOSTANDARD LVCMOS33} [get_ports {sdram_a_o[4]}];           # SDRAM_A4
-set_property -dict {PACKAGE_PIN W6   IOSTANDARD LVCMOS33} [get_ports {sdram_a_o[5]}];           # SDRAM_A5
-set_property -dict {PACKAGE_PIN W4   IOSTANDARD LVCMOS33} [get_ports {sdram_a_o[6]}];           # SDRAM_A6
-set_property -dict {PACKAGE_PIN U7   IOSTANDARD LVCMOS33} [get_ports {sdram_a_o[7]}];           # SDRAM_A7
-set_property -dict {PACKAGE_PIN AA8  IOSTANDARD LVCMOS33} [get_ports {sdram_a_o[8]}];           # SDRAM_A8
-set_property -dict {PACKAGE_PIN Y2   IOSTANDARD LVCMOS33} [get_ports {sdram_a_o[9]}];           # SDRAM_A9
-set_property -dict {PACKAGE_PIN R6   IOSTANDARD LVCMOS33} [get_ports {sdram_a_o[10]}];          # SDRAM_A10
-set_property -dict {PACKAGE_PIN Y7   IOSTANDARD LVCMOS33} [get_ports {sdram_a_o[11]}];          # SDRAM_A11
-set_property -dict {PACKAGE_PIN Y9   IOSTANDARD LVCMOS33} [get_ports {sdram_a_o[12]}];          # SDRAM_A12
-set_property -dict {PACKAGE_PIN U3   IOSTANDARD LVCMOS33} [get_ports {sdram_ba_o[0]}];          # SDRAM_BA0
-set_property -dict {PACKAGE_PIN R4   IOSTANDARD LVCMOS33} [get_ports {sdram_ba_o[1]}];          # SDRAM_BA1
-set_property -dict {PACKAGE_PIN V3   IOSTANDARD LVCMOS33} [get_ports {sdram_cas_n_o}];          # SDRAM_CAS#
-set_property -dict {PACKAGE_PIN U5   IOSTANDARD LVCMOS33} [get_ports {sdram_cke_o}];            # SDRAM_CKE
-set_property -dict {PACKAGE_PIN V8   IOSTANDARD LVCMOS33} [get_ports {sdram_clk_o}];            # SDRAM_CLK
-set_property -dict {PACKAGE_PIN G3   IOSTANDARD LVCMOS33} [get_ports {sdram_cs_n_o}];           # SDRAM_CS#
-set_property -dict {PACKAGE_PIN V5   IOSTANDARD LVCMOS33} [get_ports {sdram_dq_io[0]}];         # SDRAM_DQ0
-set_property -dict {PACKAGE_PIN AA4  IOSTANDARD LVCMOS33} [get_ports {sdram_dq_io[10]}];        # SDRAM_DQ10
-set_property -dict {PACKAGE_PIN V7   IOSTANDARD LVCMOS33} [get_ports {sdram_dq_io[11]}];        # SDRAM_DQ11
-set_property -dict {PACKAGE_PIN AA6  IOSTANDARD LVCMOS33} [get_ports {sdram_dq_io[12]}];        # SDRAM_DQ12
-set_property -dict {PACKAGE_PIN W5   IOSTANDARD LVCMOS33} [get_ports {sdram_dq_io[13]}];        # SDRAM_DQ13
-set_property -dict {PACKAGE_PIN AB6  IOSTANDARD LVCMOS33} [get_ports {sdram_dq_io[14]}];        # SDRAM_DQ14
-set_property -dict {PACKAGE_PIN Y3   IOSTANDARD LVCMOS33} [get_ports {sdram_dq_io[15]}];        # SDRAM_DQ15
-set_property -dict {PACKAGE_PIN T1   IOSTANDARD LVCMOS33} [get_ports {sdram_dq_io[1]}];         # SDRAM_DQ1
-set_property -dict {PACKAGE_PIN V4   IOSTANDARD LVCMOS33} [get_ports {sdram_dq_io[2]}];         # SDRAM_DQ2
-set_property -dict {PACKAGE_PIN U2   IOSTANDARD LVCMOS33} [get_ports {sdram_dq_io[3]}];         # SDRAM_DQ3
-set_property -dict {PACKAGE_PIN V2   IOSTANDARD LVCMOS33} [get_ports {sdram_dq_io[4]}];         # SDRAM_DQ4
-set_property -dict {PACKAGE_PIN U1   IOSTANDARD LVCMOS33} [get_ports {sdram_dq_io[5]}];         # SDRAM_DQ5
-set_property -dict {PACKAGE_PIN U6   IOSTANDARD LVCMOS33} [get_ports {sdram_dq_io[6]}];         # SDRAM_DQ6
-set_property -dict {PACKAGE_PIN T6   IOSTANDARD LVCMOS33} [get_ports {sdram_dq_io[7]}];         # SDRAM_DQ7
-set_property -dict {PACKAGE_PIN W7   IOSTANDARD LVCMOS33} [get_ports {sdram_dq_io[8]}];         # SDRAM_DQ8
-set_property -dict {PACKAGE_PIN AA3  IOSTANDARD LVCMOS33} [get_ports {sdram_dq_io[9]}];         # SDRAM_DQ9
-set_property -dict {PACKAGE_PIN Y6   IOSTANDARD LVCMOS33} [get_ports {sdram_dqmh_o}];           # SDRAM_DQMH
-set_property -dict {PACKAGE_PIN W2   IOSTANDARD LVCMOS33} [get_ports {sdram_dqml_o}];           # SDRAM_DQML
-set_property -dict {PACKAGE_PIN T5   IOSTANDARD LVCMOS33} [get_ports {sdram_ras_n_o}];          # SDRAM_RAS#
-set_property -dict {PACKAGE_PIN G1   IOSTANDARD LVCMOS33} [get_ports {sdram_we_n_o}];           # SDRAM_WE#
-set_property -dict {PULLUP FALSE  SLEW FAST  DRIVE 16}    [get_ports {sdram_*}];
+   -- Quad SPI Flash. U5 = S25FL512SAGBHIS10
+   qspidb_io               : inout std_logic_vector(3 downto 0);
+   qspicsn_o               : out   std_logic;
 
 
-################################
-## PLACEMENT CONSTRAINTS
-################################
+   -- I2C bus
+   -- U32 = PCA9655EMTTXG. Address 0x40. I/O expander.
+   -- U12 = MP8869SGL-Z.   Address 0x61. DC/DC Converter.
+   -- U14 = MP8869SGL-Z.   Address 0x67. DC/DC Converter.
+   i2c_scl_io              : inout std_logic;
+   i2c_sda_io              : inout std_logic;
 
-# Place Keyboard close to I/O pins
-create_pblock pblock_m65driver
-add_cells_to_pblock pblock_m65driver [get_cells [list i_framework/i_m2m_keyb/m65driver]]
-resize_pblock pblock_m65driver -add {SLICE_X0Y225:SLICE_X7Y243}
+   -- Debug.
+   dbg_io_11               : inout std_logic;
 
-# Place SD card controller in the middle between the left and right FPGA boundary because the output ports are at the opposide edges
-create_pblock pblock_sdcard
-add_cells_to_pblock pblock_sdcard [get_cells [list i_framework/i_qnice_wrapper/QNICE_SOC/sd_card]]
-resize_pblock pblock_sdcard -add {SLICE_X66Y178:SLICE_X99Y193}
+   -- SDRAM - 32M x 16 bit, 3.3V VCC. U44 = IS42S16320F-6BL
+   sdram_clk_o             : out   std_logic;
+   sdram_cke_o             : out   std_logic;
+   sdram_ras_n_o           : out   std_logic;
+   sdram_cas_n_o           : out   std_logic;
+   sdram_we_n_o            : out   std_logic;
+   sdram_cs_n_o            : out   std_logic;
+   sdram_ba_o              : out   std_logic_vector(1 downto 0);
+   sdram_a_o               : out   std_logic_vector(12 downto 0);
+   sdram_dqml_o            : out   std_logic;
+   sdram_dqmh_o            : out   std_logic;
+   sdram_dq_io             : inout std_logic_vector(15 downto 0)
+);
+end entity mega65_r6;
 
-# Place phase-shifted VGA output registers near the actual output buffers
-create_pblock pblock_vga
-add_cells_to_pblock pblock_vga [get_cells [list i_framework/i_av_pipeline/i_analog_pipeline/VGA_OUT_PHASE_SHIFTED.*]]
-resize_pblock pblock_vga -add SLICE_X0Y75:SLICE_X5Y99
+architecture synthesis of mega65_r6 is
+
+   signal main_clk    : std_logic;
+   signal main_rst    : std_logic;
+   signal qnice_clk   : std_logic;
+   signal qnice_rst   : std_logic;
+
+   --------------------------------------------------------------------------------------------
+   -- main_clk (MiSTer core's clock)
+   ---------------------------------------------------------------------------------------------
+
+   -- QNICE control and status register
+   signal main_qnice_reset       : std_logic;
+   signal main_qnice_pause       : std_logic;
+
+   signal main_reset_m2m         : std_logic;
+   signal main_reset_core        : std_logic;
+
+   -- keyboard handling (incl. drive led)
+   signal main_key_num           : integer range 0 to 79;
+   signal main_key_pressed_n     : std_logic;
+   signal main_power_led         : std_logic;
+   signal main_power_led_col     : std_logic_vector(23 downto 0);
+   signal main_drive_led         : std_logic;
+   signal main_drive_led_col     : std_logic_vector(23 downto 0);
+
+   -- QNICE On Screen Menu selections
+   signal main_osm_control_m     : std_logic_vector(255 downto 0);
+
+   -- QNICE general purpose register
+   signal main_qnice_gp_reg      : std_logic_vector(255 downto 0);
+
+   -- signed audio from the core
+   -- if the core outputs unsigned audio, make sure you convert properly to prevent a loss in audio quality
+   signal main_audio_l           : signed(15 downto 0);
+   signal main_audio_r           : signed(15 downto 0);
+
+   -- Video output from Core
+   signal video_clk              : std_logic;
+   signal video_rst              : std_logic;
+   signal video_ce               : std_logic;
+   signal video_ce_ovl           : std_logic;
+   signal video_red              : std_logic_vector(7 downto 0);
+   signal video_green            : std_logic_vector(7 downto 0);
+   signal video_blue             : std_logic_vector(7 downto 0);
+   signal video_vs               : std_logic;
+   signal video_hs               : std_logic;
+   signal video_hblank           : std_logic;
+   signal video_vblank           : std_logic;
+
+   -- Joysticks and Paddles
+   signal main_joy1_up_n_in      : std_logic;
+   signal main_joy1_down_n_in    : std_logic;
+   signal main_joy1_left_n_in    : std_logic;
+   signal main_joy1_right_n_in   : std_logic;
+   signal main_joy1_fire_n_in    : std_logic;
+
+   signal main_joy1_up_n_out     : std_logic;
+   signal main_joy1_down_n_out   : std_logic;
+   signal main_joy1_left_n_out   : std_logic;
+   signal main_joy1_right_n_out  : std_logic;
+   signal main_joy1_fire_n_out   : std_logic;
+
+   signal main_joy2_up_n_in      : std_logic;
+   signal main_joy2_down_n_in    : std_logic;
+   signal main_joy2_left_n_in    : std_logic;
+   signal main_joy2_right_n_in   : std_logic;
+   signal main_joy2_fire_n_in    : std_logic;
+
+   signal main_joy2_up_n_out     : std_logic;
+   signal main_joy2_down_n_out   : std_logic;
+   signal main_joy2_left_n_out   : std_logic;
+   signal main_joy2_right_n_out  : std_logic;
+   signal main_joy2_fire_n_out   : std_logic;
+
+   signal main_pot1_x            : std_logic_vector(7 downto 0);
+   signal main_pot1_y            : std_logic_vector(7 downto 0);
+   signal main_pot2_x            : std_logic_vector(7 downto 0);
+   signal main_pot2_y            : std_logic_vector(7 downto 0);
+   signal main_rtc               : std_logic_vector(64 downto 0);
+
+   signal iec_clk_en             : std_logic;
+   signal iec_data_en            : std_logic;
+   signal iec_srq_en             : std_logic;
+
+   signal cart_en                : std_logic;
+   signal cart_reset_oe          : std_logic;
+   signal cart_reset_in          : std_logic;
+   signal cart_reset_out         : std_logic;
+   signal cart_game_oe           : std_logic;
+   signal cart_game_in           : std_logic;
+   signal cart_game_out          : std_logic;
+   signal cart_exrom_oe          : std_logic;
+   signal cart_exrom_in          : std_logic;
+   signal cart_exrom_out         : std_logic;
+   signal cart_nmi_oe            : std_logic;
+   signal cart_nmi_in            : std_logic;
+   signal cart_nmi_out           : std_logic;
+   signal cart_irq_oe            : std_logic;
+   signal cart_irq_in            : std_logic;
+   signal cart_irq_out           : std_logic;
+   signal cart_roml_oe           : std_logic;
+   signal cart_roml_in           : std_logic;
+   signal cart_roml_out          : std_logic;
+   signal cart_romh_oe           : std_logic;
+   signal cart_romh_in           : std_logic;
+   signal cart_romh_out          : std_logic;
+   signal cart_ctrl_oe           : std_logic;
+   signal cart_ba_in             : std_logic;
+   signal cart_rw_in             : std_logic;
+   signal cart_io1_in            : std_logic;
+   signal cart_io2_in            : std_logic;
+   signal cart_ba_out            : std_logic;
+   signal cart_rw_out            : std_logic;
+   signal cart_io1_out           : std_logic;
+   signal cart_io2_out           : std_logic;
+   signal cart_addr_oe           : std_logic;
+   signal cart_a_in              : unsigned(15 downto 0);
+   signal cart_a_out             : unsigned(15 downto 0);
+   signal cart_data_oe           : std_logic;
+   signal cart_d_in              : unsigned(7 downto 0);
+   signal cart_d_out             : unsigned(7 downto 0);
+
+   signal audio_clk              : std_logic;
+   signal audio_reset            : std_logic;
+   signal audio_left             : signed(15 downto 0);
+   signal audio_right            : signed(15 downto 0);
+
+   ---------------------------------------------------------------------------------------------
+   -- HyperRAM clock domain
+   ---------------------------------------------------------------------------------------------
+
+   signal hr_clk                 : std_logic;
+   signal hr_rst                 : std_logic;
+   signal hr_core_write          : std_logic;
+   signal hr_core_read           : std_logic;
+   signal hr_core_address        : std_logic_vector(31 downto 0);
+   signal hr_core_writedata      : std_logic_vector(15 downto 0);
+   signal hr_core_byteenable     : std_logic_vector(1 downto 0);
+   signal hr_core_burstcount     : std_logic_vector(7 downto 0);
+   signal hr_core_readdata       : std_logic_vector(15 downto 0);
+   signal hr_core_readdatavalid  : std_logic;
+   signal hr_core_waitrequest    : std_logic;
+   signal hr_low                 : std_logic;
+   signal hr_high                : std_logic;
+
+   ---------------------------------------------------------------------------------------------
+   -- qnice_clk
+   ---------------------------------------------------------------------------------------------
+
+   -- Video and audio mode control
+   signal qnice_dvi              : std_logic;
+   signal qnice_video_mode       : video_mode_type;
+   signal qnice_scandoubler      : std_logic;
+   signal qnice_csync            : std_logic;
+   signal qnice_audio_mute       : std_logic;
+   signal qnice_audio_filter     : std_logic;
+   signal qnice_zoom_crop        : std_logic;
+   signal qnice_ascal_mode       : std_logic_vector(1 downto 0);
+   signal qnice_ascal_polyphase  : std_logic;
+   signal qnice_ascal_triplebuf  : std_logic;
+   signal qnice_vga_enable       : std_logic;
+   signal qnice_retro15kHz       : std_logic;
+   signal qnice_osm_cfg_scaling  : std_logic_vector(8 downto 0);
+
+   -- flip joystick ports
+   signal qnice_flip_joyports    : std_logic;
+
+   -- QNICE On Screen Menu selections
+   signal qnice_osm_control_m    : std_logic_vector(255 downto 0);
+
+   -- QNICE general purpose register
+   signal qnice_gp_reg           : std_logic_vector(255 downto 0);
+
+   -- QNICE MMIO 4k-segmented access to RAMs, ROMs and similarily behaving devices
+   -- ramrom_addr is 28-bit because we have a 16-bit window selector and a 4k window: 65536*4096 = 268.435.456 = 2^28
+   signal qnice_ramrom_dev       : std_logic_vector(15 downto 0);
+   signal qnice_ramrom_addr      : std_logic_vector(27 downto 0);
+   signal qnice_ramrom_data_out  : std_logic_vector(15 downto 0);
+   signal qnice_ramrom_data_in   : std_logic_vector(15 downto 0);
+   signal qnice_ramrom_ce        : std_logic;
+   signal qnice_ramrom_we        : std_logic;
+   signal qnice_ramrom_wait      : std_logic;
+
+begin
+
+   -- Driver for the audio DAC (AK4432VT).
+   i_audio : entity work.audio
+      port map (
+         audio_clk_i    => audio_clk,
+         audio_reset_i  => audio_reset,
+         audio_left_i   => audio_left,
+         audio_right_i  => audio_right,
+         audio_mclk_o   => audio_mclk_o,
+         audio_bick_o   => audio_bick_o,
+         audio_sdti_o   => audio_sdti_o,
+         audio_lrclk_o  => audio_lrclk_o,
+         audio_pdn_n_o  => audio_pdn_n_o
+      ); -- i_audio
+
+   audio_i2cfil_o <= '0';  -- I2C speed 400 kHz
+
+   ---------------------------------------------------------------------------------------------
+   -- C64 Cartridge port
+   ---------------------------------------------------------------------------------------------
+
+   cart_en_o         <= cart_en;
+   cart_reset_io     <= cart_reset_out when cart_reset_oe = '1' else 'Z';
+   cart_game_io      <= cart_game_out  when cart_game_oe  = '1' else 'Z';
+   cart_exrom_io     <= cart_exrom_out when cart_exrom_oe = '1' else 'Z';
+   cart_nmi_io       <= cart_nmi_out   when cart_nmi_oe   = '1' else 'Z';
+   cart_irq_io       <= cart_irq_out   when cart_irq_oe   = '1' else 'Z';
+   cart_roml_io      <= cart_roml_out  when cart_roml_oe  = '1' else 'Z';
+   cart_romh_io      <= cart_romh_out  when cart_romh_oe  = '1' else 'Z';
+   cart_reset_in     <= cart_reset_io;
+   cart_game_in      <= cart_game_io;
+   cart_exrom_in     <= cart_exrom_io;
+   cart_nmi_in       <= cart_nmi_io;
+   cart_irq_in       <= cart_irq_io;
+   cart_roml_in      <= cart_roml_io;
+   cart_romh_in      <= cart_romh_io;
+   cart_reset_oe_n_o <= not cart_reset_oe;
+   cart_game_oe_n_o  <= not cart_game_oe;
+   cart_exrom_oe_n_o <= not cart_exrom_oe;
+   cart_nmi_oe_n_o   <= not cart_nmi_oe;
+   cart_irq_oe_n_o   <= not cart_irq_oe;
+   cart_roml_oe_n_o  <= not cart_roml_oe;
+   cart_romh_oe_n_o  <= not cart_romh_oe;
+
+   cart_ba_io        <= cart_ba_out   when cart_ctrl_oe = '1' else 'Z';
+   cart_rw_io        <= cart_rw_out   when cart_ctrl_oe = '1' else 'Z';
+   cart_io1_io       <= cart_io1_out  when cart_ctrl_oe = '1' else 'Z';
+   cart_io2_io       <= cart_io2_out  when cart_ctrl_oe = '1' else 'Z';
+   cart_ba_in        <= cart_ba_io;
+   cart_rw_in        <= cart_rw_io;
+   cart_io1_in       <= cart_io1_io;
+   cart_io2_in       <= cart_io2_io;
+   cart_ctrl_en_o    <= not cart_en;
+   cart_ctrl_dir_o   <= cart_ctrl_oe;
+
+   cart_d_io         <= cart_d_out    when cart_data_oe = '1' else (others => 'Z');
+   cart_d_in         <= cart_d_io;
+   cart_data_en_o    <= not cart_en;
+   cart_data_dir_o   <= cart_data_oe;
+
+   cart_a_io         <= cart_a_out    when cart_addr_oe = '1' else (others => 'Z');
+   cart_a_in         <= cart_a_io;
+   cart_addr_en_o    <= not cart_en;
+   cart_haddr_dir_o  <= cart_addr_oe;
+   cart_laddr_dir_o  <= cart_addr_oe;
+
+
+   iec_clk_en_n_o    <= not iec_clk_en;
+   iec_data_en_n_o   <= not iec_data_en;
+   iec_srq_en_n_o    <= not iec_srq_en;
+
+
+   ---------------------------------------------------------------------------------------------
+   -- Safe default values for ports not supported by the M2M framework
+   ---------------------------------------------------------------------------------------------
+
+   vdac_psave_n_o        <= '1';
+   hdmi_hiz_en_o         <= '0'; -- HDMI is 50 ohm terminated.
+   hdmi_ls_oe_n_o        <= '0'; -- Enable HDMI output
+   dbg_io_11             <= 'Z';
+
+   eth_clock_o           <= '0';
+   eth_led2_o            <= '0';
+   eth_mdc_o             <= '0';
+   eth_mdio_io           <= 'Z';
+   eth_reset_o           <= '1';
+   eth_txd_o             <= (others => '0');
+   eth_txen_o            <= '0';
+   f_density_o           <= '1';
+   f_motora_o            <= '1';
+   f_motorb_o            <= '1';
+   f_selecta_o           <= '1';
+   f_selectb_o           <= '1';
+   f_side1_o             <= '1';
+   f_stepdir_o           <= '1';
+   f_step_o              <= '1';
+   f_wdata_o             <= '1';
+   f_wgate_o             <= '1';
+   joystick_5v_disable_o <= '0'; -- Enable 5V power supply to joysticks
+   led_g_n_o             <= '1'; -- Off
+   led_r_n_o             <= '1'; -- Off
+   led_o                 <= '0'; -- Off
+   p1lo_io               <= (others => 'Z');
+   p1hi_io               <= (others => 'Z');
+   p2lo_io               <= (others => 'Z');
+   p2hi_io               <= (others => 'Z');
+   pmod1_en_o            <= '0';
+   pmod2_en_o            <= '0';
+   qspidb_io             <= (others => 'Z');
+   qspicsn_o             <= '1';
+   sdram_clk_o           <= '0';
+   sdram_cke_o           <= '0';
+   sdram_ras_n_o         <= '1';
+   sdram_cas_n_o         <= '1';
+   sdram_we_n_o          <= '1';
+   sdram_cs_n_o          <= '1';
+   sdram_ba_o            <= (others => '0');
+   sdram_a_o             <= (others => '0');
+   sdram_dqml_o          <= '0';
+   sdram_dqmh_o          <= '0';
+   sdram_dq_io           <= (others => 'Z');
+
+
+   -----------------------------------------------------------------------------------------
+   -- MiSTer2MEGA framework
+   -----------------------------------------------------------------------------------------
+
+   i_framework : entity work.framework
+   generic map (
+      G_BOARD => "MEGA65_R6"
+   )
+   port map (
+      -- Connect to I/O ports
+      clk_i                   => clk_i,
+      reset_n_i               => not reset_button_i,
+      uart_rxd_i              => uart_rxd_i,
+      uart_txd_o              => uart_txd_o,
+      vga_red_o               => vga_red_o,
+      vga_green_o             => vga_green_o,
+      vga_blue_o              => vga_blue_o,
+      vga_hs_o                => vga_hs_o,
+      vga_vs_o                => vga_vs_o,
+      vdac_clk_o              => vdac_clk_o,
+      vdac_sync_n_o           => vdac_sync_n_o,
+      vdac_blank_n_o          => vdac_blank_n_o,
+      tmds_data_p_o           => tmds_data_p_o,
+      tmds_data_n_o           => tmds_data_n_o,
+      tmds_clk_p_o            => tmds_clk_p_o,
+      tmds_clk_n_o            => tmds_clk_n_o,
+      kb_io0_o                => kb_io0_o,
+      kb_io1_o                => kb_io1_o,
+      kb_io2_i                => kb_io2_i,
+      sd_reset_o              => sd_reset_o,
+      sd_clk_o                => sd_clk_o,
+      sd_mosi_o               => sd_mosi_o,
+      sd_miso_i               => sd_miso_i,
+      sd_cd_i                 => sd_cd_i,
+      sd2_reset_o             => sd2_reset_o,
+      sd2_clk_o               => sd2_clk_o,
+      sd2_mosi_o              => sd2_mosi_o,
+      sd2_miso_i              => sd2_miso_i,
+      sd2_cd_i                => sd2_cd_i,
+      joy_1_up_n_i            => fa_up_n_i,
+      joy_1_down_n_i          => fa_down_n_i,
+      joy_1_left_n_i          => fa_left_n_i,
+      joy_1_right_n_i         => fa_right_n_i,
+      joy_1_fire_n_i          => fa_fire_n_i,
+      joy_1_up_n_o            => fa_up_n_o,
+      joy_1_down_n_o          => fa_down_n_o,
+      joy_1_left_n_o          => fa_left_n_o,
+      joy_1_right_n_o         => fa_right_n_o,
+      joy_1_fire_n_o          => fa_fire_n_o,
+      joy_2_up_n_i            => fb_up_n_i,
+      joy_2_down_n_i          => fb_down_n_i,
+      joy_2_left_n_i          => fb_left_n_i,
+      joy_2_right_n_i         => fb_right_n_i,
+      joy_2_fire_n_i          => fb_fire_n_i,
+      joy_2_up_n_o            => fb_up_n_o,
+      joy_2_down_n_o          => fb_down_n_o,
+      joy_2_left_n_o          => fb_left_n_o,
+      joy_2_right_n_o         => fb_right_n_o,
+      joy_2_fire_n_o          => fb_fire_n_o,
+      paddle_i                => paddle_i,
+      paddle_drain_o          => paddle_drain_o,
+      hr_d_io                 => hr_d_io,
+      hr_rwds_io              => hr_rwds_io,
+      hr_reset_o              => hr_reset_o,
+      hr_clk_p_o              => hr_clk_p_o,
+      hr_cs0_o                => hr_cs0_o,
+
+      -- Connect to CORE
+      qnice_clk_o             => qnice_clk,
+      qnice_rst_o             => qnice_rst,
+      main_clk_i              => main_clk,
+      main_rst_i              => main_rst,
+      main_qnice_reset_o      => main_qnice_reset,
+      main_qnice_pause_o      => main_qnice_pause,
+      main_reset_m2m_o        => main_reset_m2m,
+      main_reset_core_o       => main_reset_core,
+      main_key_num_o          => main_key_num,
+      main_key_pressed_n_o    => main_key_pressed_n,
+      main_power_led_i        => main_power_led,
+      main_power_led_col_i    => main_power_led_col,
+      main_drive_led_i        => main_drive_led,
+      main_drive_led_col_i    => main_drive_led_col,
+      main_osm_control_m_o    => main_osm_control_m,
+      main_qnice_gp_reg_o     => main_qnice_gp_reg,
+      main_audio_l_i          => main_audio_l,
+      main_audio_r_i          => main_audio_r,
+      video_clk_i             => video_clk,
+      video_rst_i             => video_rst,
+      video_ce_i              => video_ce,
+      video_ce_ovl_i          => video_ce_ovl,
+      video_red_i             => video_red,
+      video_green_i           => video_green,
+      video_blue_i            => video_blue,
+      video_vs_i              => video_vs,
+      video_hs_i              => video_hs,
+      video_hblank_i          => video_hblank,
+      video_vblank_i          => video_vblank,
+      main_joy1_up_n_o        => main_joy1_up_n_in,
+      main_joy1_down_n_o      => main_joy1_down_n_in,
+      main_joy1_left_n_o      => main_joy1_left_n_in,
+      main_joy1_right_n_o     => main_joy1_right_n_in,
+      main_joy1_fire_n_o      => main_joy1_fire_n_in,
+      main_joy1_up_n_i        => main_joy1_up_n_out,
+      main_joy1_down_n_i      => main_joy1_down_n_out,
+      main_joy1_left_n_i      => main_joy1_left_n_out,
+      main_joy1_right_n_i     => main_joy1_right_n_out,
+      main_joy1_fire_n_i      => main_joy1_fire_n_out,
+      main_joy2_up_n_o        => main_joy2_up_n_in,
+      main_joy2_down_n_o      => main_joy2_down_n_in,
+      main_joy2_left_n_o      => main_joy2_left_n_in,
+      main_joy2_right_n_o     => main_joy2_right_n_in,
+      main_joy2_fire_n_o      => main_joy2_fire_n_in,
+      main_joy2_up_n_i        => main_joy2_up_n_out,
+      main_joy2_down_n_i      => main_joy2_down_n_out,
+      main_joy2_left_n_i      => main_joy2_left_n_out,
+      main_joy2_right_n_i     => main_joy2_right_n_out,
+      main_joy2_fire_n_i      => main_joy2_fire_n_out,
+      main_pot1_x_o           => main_pot1_x,
+      main_pot1_y_o           => main_pot1_y,
+      main_pot2_x_o           => main_pot2_x,
+      main_pot2_y_o           => main_pot2_y,
+      main_rtc_o              => main_rtc,
+
+      -- Provide HyperRAM to core (in HyperRAM clock domain)
+      hr_clk_o                => hr_clk,
+      hr_rst_o                => hr_rst,
+      hr_core_write_i         => hr_core_write,
+      hr_core_read_i          => hr_core_read,
+      hr_core_address_i       => hr_core_address,
+      hr_core_writedata_i     => hr_core_writedata,
+      hr_core_byteenable_i    => hr_core_byteenable,
+      hr_core_burstcount_i    => hr_core_burstcount,
+      hr_core_readdata_o      => hr_core_readdata,
+      hr_core_readdatavalid_o => hr_core_readdatavalid,
+      hr_core_waitrequest_o   => hr_core_waitrequest,
+      hr_high_o               => hr_high,
+      hr_low_o                => hr_low,
+
+      -- Audio
+      audio_clk_o             => audio_clk,
+      audio_reset_o           => audio_reset,
+      audio_left_o            => audio_left,
+      audio_right_o           => audio_right,
+
+      -- Connect to QNICE
+      qnice_dvi_i             => qnice_dvi,
+      qnice_video_mode_i      => qnice_video_mode,
+      qnice_scandoubler_i     => qnice_scandoubler,
+      qnice_csync_i           => qnice_csync,
+      qnice_audio_mute_i      => qnice_audio_mute,
+      qnice_audio_filter_i    => qnice_audio_filter,
+      qnice_zoom_crop_i       => qnice_zoom_crop,
+      qnice_osm_cfg_scaling_i => qnice_osm_cfg_scaling,
+      qnice_vga_enable_i      => qnice_vga_enable,
+      qnice_retro15kHz_i      => qnice_retro15kHz,
+      qnice_ascal_mode_i      => qnice_ascal_mode,
+      qnice_ascal_polyphase_i => qnice_ascal_polyphase,
+      qnice_ascal_triplebuf_i => qnice_ascal_triplebuf,
+      qnice_flip_joyports_i   => qnice_flip_joyports,
+      qnice_osm_control_m_o   => qnice_osm_control_m,
+      qnice_gp_reg_o          => qnice_gp_reg,
+      qnice_ramrom_dev_o      => qnice_ramrom_dev,
+      qnice_ramrom_addr_o     => qnice_ramrom_addr,
+      qnice_ramrom_data_out_o => qnice_ramrom_data_out,
+      qnice_ramrom_data_in_i  => qnice_ramrom_data_in,
+      qnice_ramrom_ce_o       => qnice_ramrom_ce,
+      qnice_ramrom_we_o       => qnice_ramrom_we,
+      qnice_ramrom_wait_i     => qnice_ramrom_wait,
+
+      hdmi_scl_io             => hdmi_scl_io,
+      hdmi_sda_io             => hdmi_sda_io,
+      vga_scl_io              => vga_scl_io,
+      vga_sda_io              => vga_sda_io,
+      audio_scl_io            => audio_scl_io,
+      audio_sda_io            => audio_sda_io,
+      i2c_scl_io              => i2c_scl_io,
+      i2c_sda_io              => i2c_sda_io,
+      fpga_sda_io             => fpga_sda_io,
+      fpga_scl_io             => fpga_scl_io,
+      grove_sda_io            => grove_sda_io,
+      grove_scl_io            => grove_scl_io
+   ); -- i_framework
+
+
+   ---------------------------------------------------------------------------------------------------------------
+   -- MEGA65 Core including the MiSTer core: Multiple clock domains
+   ---------------------------------------------------------------------------------------------------------------
+
+   CORE : entity work.MEGA65_Core
+      generic map (
+         G_BOARD => "MEGA65_R6"
+      )
+      port map (
+         clk_i                   => clk_i,
+
+         -- Share clock and reset with the framework
+         main_clk_o              => main_clk,            -- CORE's 54 MHz clock
+         main_rst_o              => main_rst,            -- CORE's reset, synchronized
+
+         --------------------------------------------------------------------------------------------------------
+         -- QNICE Clock Domain
+         --------------------------------------------------------------------------------------------------------
+
+         -- Provide QNICE clock to the core: for the vdrives as well as for RAMs and ROMs
+         qnice_clk_i             => qnice_clk,
+         qnice_rst_i             => qnice_rst,
+
+         -- Video and audio mode control
+         qnice_dvi_o             => qnice_dvi,
+         qnice_video_mode_o      => qnice_video_mode,
+         qnice_scandoubler_o     => qnice_scandoubler,
+         qnice_csync_o           => qnice_csync,
+         qnice_audio_mute_o      => qnice_audio_mute,
+         qnice_audio_filter_o    => qnice_audio_filter,
+         qnice_zoom_crop_o       => qnice_zoom_crop,
+         qnice_ascal_mode_o      => qnice_ascal_mode,
+         qnice_ascal_polyphase_o => qnice_ascal_polyphase,
+         qnice_ascal_triplebuf_o => qnice_ascal_triplebuf,
+         qnice_vga_enable_o      => qnice_vga_enable,
+         qnice_retro15kHz_o      => qnice_retro15kHz,
+         qnice_osm_cfg_scaling_o => qnice_osm_cfg_scaling,
+
+         -- Flip joystick ports
+         qnice_flip_joyports_o   => qnice_flip_joyports,
+
+         -- On-Screen-Menu selections (in QNICE clock domain)
+         qnice_osm_control_i     => qnice_osm_control_m,
+
+         -- QNICE general purpose register
+         qnice_gp_reg_i          => qnice_gp_reg,
+
+         -- Core-specific devices
+         qnice_dev_id_i          => qnice_ramrom_dev,
+         qnice_dev_addr_i        => qnice_ramrom_addr,
+         qnice_dev_data_i        => qnice_ramrom_data_out,
+         qnice_dev_data_o        => qnice_ramrom_data_in,
+         qnice_dev_ce_i          => qnice_ramrom_ce,
+         qnice_dev_we_i          => qnice_ramrom_we,
+         qnice_dev_wait_o        => qnice_ramrom_wait,
+
+         --------------------------------------------------------------------------------------------------------
+         -- Core Clock Domain
+         --------------------------------------------------------------------------------------------------------
+
+         -- M2M's reset manager provides 2 signals:
+         --    m2m:   Reset the whole machine: Core and Framework
+         --    core:  Only reset the core
+         main_reset_m2m_i        => main_reset_m2m  or main_qnice_reset or main_rst,
+         main_reset_core_i       => main_reset_core or main_qnice_reset,
+         main_pause_core_i       => main_qnice_pause,
+
+         -- On-Screen-Menu selections (in main clock domain)
+         main_osm_control_i      => main_osm_control_m,
+
+         -- QNICE general purpose register (in main clock domain)
+         main_qnice_gp_reg_i     => main_qnice_gp_reg,
+
+         -- Video output
+         video_clk_o             => video_clk,
+         video_rst_o             => video_rst,
+         video_ce_o              => video_ce,
+         video_ce_ovl_o          => video_ce_ovl,
+         video_red_o             => video_red,
+         video_green_o           => video_green,
+         video_blue_o            => video_blue,
+         video_vs_o              => video_vs,
+         video_hs_o              => video_hs,
+         video_hblank_o          => video_hblank,
+         video_vblank_o          => video_vblank,
+
+         -- Audio output (Signed PCM)
+         main_audio_left_o       => main_audio_l,
+         main_audio_right_o      => main_audio_r,
+
+         -- M2M Keyboard interface
+         main_kb_key_num_i       => main_key_num,
+         main_kb_key_pressed_n_i => main_key_pressed_n,
+         main_power_led_o        => main_power_led,
+         main_power_led_col_o    => main_power_led_col,
+         main_drive_led_o        => main_drive_led,
+         main_drive_led_col_o    => main_drive_led_col,
+
+         -- Joysticks input
+         main_joy_1_up_n_i       => main_joy1_up_n_in,
+         main_joy_1_down_n_i     => main_joy1_down_n_in,
+         main_joy_1_left_n_i     => main_joy1_left_n_in,
+         main_joy_1_right_n_i    => main_joy1_right_n_in,
+         main_joy_1_fire_n_i     => main_joy1_fire_n_in,
+         main_joy_1_up_n_o       => main_joy1_up_n_out,
+         main_joy_1_down_n_o     => main_joy1_down_n_out,
+         main_joy_1_left_n_o     => main_joy1_left_n_out,
+         main_joy_1_right_n_o    => main_joy1_right_n_out,
+         main_joy_1_fire_n_o     => main_joy1_fire_n_out,
+
+         main_joy_2_up_n_i       => main_joy2_up_n_in,
+         main_joy_2_down_n_i     => main_joy2_down_n_in,
+         main_joy_2_left_n_i     => main_joy2_left_n_in,
+         main_joy_2_right_n_i    => main_joy2_right_n_in,
+         main_joy_2_fire_n_i     => main_joy2_fire_n_in,
+         main_joy_2_up_n_o       => main_joy2_up_n_out,
+         main_joy_2_down_n_o     => main_joy2_down_n_out,
+         main_joy_2_left_n_o     => main_joy2_left_n_out,
+         main_joy_2_right_n_o    => main_joy2_right_n_out,
+         main_joy_2_fire_n_o     => main_joy2_fire_n_out,
+
+         main_pot1_x_i           => main_pot1_x,
+         main_pot1_y_i           => main_pot1_y,
+         main_pot2_x_i           => main_pot2_x,
+         main_pot2_y_i           => main_pot2_y,
+         main_rtc_i              => main_rtc,
+
+         --------------------------------------------------------------------------------------------------------
+         -- Provide support for external memory (Avalon Memory Map)
+         --------------------------------------------------------------------------------------------------------
+
+         hr_clk_i                => hr_clk,
+         hr_rst_i                => hr_rst,
+         hr_core_write_o         => hr_core_write,
+         hr_core_read_o          => hr_core_read,
+         hr_core_address_o       => hr_core_address,
+         hr_core_writedata_o     => hr_core_writedata,
+         hr_core_byteenable_o    => hr_core_byteenable,
+         hr_core_burstcount_o    => hr_core_burstcount,
+         hr_core_readdata_i      => hr_core_readdata,
+         hr_core_readdatavalid_i => hr_core_readdatavalid,
+         hr_core_waitrequest_i   => hr_core_waitrequest,
+         hr_high_i               => hr_high,
+         hr_low_i                => hr_low,
+
+         --------------------------------------------------------------------
+         -- C64 specific ports that are not supported by the M2M framework
+         --------------------------------------------------------------------
+
+         -- CBM-488/IEC serial port
+         iec_reset_n_o           => iec_reset_n_o,
+         iec_atn_n_o             => iec_atn_n_o,
+         iec_clk_en_o            => iec_clk_en,
+         iec_clk_n_i             => iec_clk_n_i,
+         iec_clk_n_o             => iec_clk_n_o,
+         iec_data_en_o           => iec_data_en,
+         iec_data_n_i            => iec_data_n_i,
+         iec_data_n_o            => iec_data_n_o,
+         iec_srq_en_o            => iec_srq_en,
+         iec_srq_n_i             => iec_srq_n_i,
+         iec_srq_n_o             => iec_srq_n_o,
+
+         -- C64 Expansion Port (aka Cartridge Port)
+         cart_en_o               => cart_en,      -- Enable port, active high
+         cart_phi2_o             => cart_phi2_o,
+         cart_dotclock_o         => cart_dotclock_o,
+         cart_dma_i              => cart_dma_i,
+         --
+         cart_reset_oe_o         => cart_reset_oe,
+         cart_reset_i            => cart_reset_in,
+         cart_reset_o            => cart_reset_out,
+         --
+         cart_game_oe_o          => cart_game_oe,
+         cart_game_i             => cart_game_in,
+         cart_game_o             => cart_game_out,
+         --
+         cart_exrom_oe_o         => cart_exrom_oe,
+         cart_exrom_i            => cart_exrom_in,
+         cart_exrom_o            => cart_exrom_out,
+         --
+         cart_nmi_oe_o           => cart_nmi_oe,
+         cart_nmi_i              => cart_nmi_in,
+         cart_nmi_o              => cart_nmi_out,
+         --
+         cart_irq_oe_o           => cart_irq_oe,
+         cart_irq_i              => cart_irq_in,
+         cart_irq_o              => cart_irq_out,
+         --
+         cart_roml_oe_o          => cart_roml_oe,
+         cart_roml_i             => cart_roml_in,
+         cart_roml_o             => cart_roml_out,
+         --
+         cart_romh_oe_o          => cart_romh_oe,
+         cart_romh_i             => cart_romh_in,
+         cart_romh_o             => cart_romh_out,
+         --
+         cart_ctrl_oe_o          => cart_ctrl_oe, -- 0 : tristate (i.e. input), 1 : output
+         cart_ba_i               => cart_ba_in,
+         cart_rw_i               => cart_rw_in,
+         cart_io1_i              => cart_io1_in,
+         cart_io2_i              => cart_io2_in,
+         cart_ba_o               => cart_ba_out,
+         cart_rw_o               => cart_rw_out,
+         cart_io1_o              => cart_io1_out,
+         cart_io2_o              => cart_io2_out,
+         --
+         cart_data_oe_o          => cart_data_oe, -- 0 : tristate (i.e. input), 1 : output
+         cart_d_i                => cart_d_in,
+         cart_d_o                => cart_d_out,
+         --
+         cart_addr_oe_o          => cart_addr_oe, -- 0 : tristate (i.e. input), 1 : output
+         cart_a_i                => cart_a_in,
+         cart_a_o                => cart_a_out
+      ); -- CORE
+
+end architecture synthesis;
 
