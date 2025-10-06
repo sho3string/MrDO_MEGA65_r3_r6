@@ -42,6 +42,7 @@ port (
    qnice_ascal_mode_o      : out std_logic_vector(1 downto 0);
    qnice_ascal_polyphase_o : out std_logic;
    qnice_ascal_triplebuf_o : out std_logic;
+   qnice_vga_enable_o      : out std_logic;              -- 0 = disable vga out, 1 enable vga output
    qnice_retro15kHz_o      : out std_logic;              -- 0 = normal frequency, 1 = retro 15 kHz frequency
    qnice_csync_o           : out std_logic;              -- 0 = normal HS/VS, 1 = Composite Sync  
 
@@ -557,7 +558,7 @@ begin
            video_hs_o       <= video_rot_hs;
            video_hblank_o   <= video_rot_hblank;
            video_vblank_o   <= video_rot_vblank;
-           video_ce_o       <= ce_vid;--ce_pix;
+           video_ce_o       <= ce_vid;
        else
            video_red_o      <= video_red;
            video_green_o    <= video_green;
@@ -566,7 +567,7 @@ begin
            video_hs_o       <= video_hs;
            video_hblank_o   <= video_hblank;
            video_vblank_o   <= video_vblank;
-           video_ce_o       <= ce_vid;--ce_pix;           
+           video_ce_o       <= ce_vid;        
        end if;
     end process;
     
@@ -575,7 +576,7 @@ begin
        port map (
           --inputs
           CLK_VIDEO      => clk_sys,
-          CE_PIXEL       => ce_vid,--ce_pix,
+          CE_PIXEL       => ce_vid,
           VGA_R          => video_red,
           VGA_G          => video_green,
           VGA_B          => video_blue,
@@ -616,7 +617,7 @@ begin
          ddram_din_i      => ddram_data(31 downto 0),
          ddram_we_i       => ddram_we,
          video_clk_i      => clk_sys,
-         video_ce_i       => ce_vid,--ce_pix,
+         video_ce_i       => ce_vid,
          video_red_o      => video_rot_red,
          video_green_o    => video_rot_green,
          video_blue_o     => video_rot_blue,
@@ -656,8 +657,13 @@ begin
    --    "Retro 15 kHz with HSync and VSync" qnice_retro15kHz_o=1 and qnice_csync_o=0
    --    "Retro 15 kHz with CSync"           qnice_retro15kHz_o=1 and qnice_csync_o=1
    qnice_scandoubler_o        <= (not qnice_osm_control_i(C_MENU_VGA_15KHZHSVS)) and (not qnice_osm_control_i(C_MENU_VGA_15KHZCS));   
+   
+   -- disable VGA out signals when video rotated. 
+   qnice_vga_enable_o         <= not qnice_osm_control_i(C_MENU_ROT90);
+   
    qnice_retro15kHz_o         <= qnice_osm_control_i(C_MENU_VGA_15KHZHSVS) or qnice_osm_control_i(C_MENU_VGA_15KHZCS);
    qnice_csync_o              <= qnice_osm_control_i(C_MENU_VGA_15KHZCS);
+   
    qnice_osm_cfg_scaling_o    <= (others => '1');
 
    -- ascal filters that are applied while processing the input

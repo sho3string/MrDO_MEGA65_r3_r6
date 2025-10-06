@@ -39,6 +39,9 @@ entity analog_pipeline is
       -- Configure the scandoubler : 0=off/1=on
       -- Make sure the signal is in the video_clk clock domain
       video_scandoubler_i     : in  std_logic;
+      
+      -- vga enable : 0=off/1=on
+      vga_enable_i            : in  std_logic;
 
       -- Composite sync : 0=off/1=on
       video_csync_i           : in  std_logic;
@@ -224,16 +227,18 @@ begin
       phase_shift_vga_signals : process(video_clk_i)
       begin
          if falling_edge(video_clk_i) then -- phase shifting by using the negative edge of the video clock
-            vga_red_o   <= vga_red_ps;
-            vga_green_o <= vga_green_ps;
-            vga_blue_o  <= vga_blue_ps;
-
-            -- Standard VGA outputs horizontal sync on pin 13 and vertical sync on pin 14 of the VGA
-            -- connector, see: https://en.wikipedia.org/wiki/VGA_connector
-            -- Composite sync output that is compatible with the MiSTer VGA to SCART adaptor needs
-            -- the composite sync signal on pin 13 and HIGH on pin 14, see: https://misterfpga.org/viewtopic.php?t=1811
-            vga_hs_o    <= vga_hs_ps when not video_csync_i else not vga_cs_ps;
-            vga_vs_o    <= vga_vs_ps when not video_csync_i else '1';
+            if vga_enable_i = '1' then
+                vga_red_o   <= vga_red_ps;
+                vga_green_o <= vga_green_ps;
+                vga_blue_o  <= vga_blue_ps;
+    
+                -- Standard VGA outputs horizontal sync on pin 13 and vertical sync on pin 14 of the VGA
+                -- connector, see: https://en.wikipedia.org/wiki/VGA_connector
+                -- Composite sync output that is compatible with the MiSTer VGA to SCART adaptor needs
+                -- the composite sync signal on pin 13 and HIGH on pin 14, see: https://misterfpga.org/viewtopic.php?t=1811
+                vga_hs_o    <= vga_hs_ps when not video_csync_i else not vga_cs_ps;
+                vga_vs_o    <= vga_vs_ps when not video_csync_i else '1';
+            end if;
          end if;
       end process;
    end block VGA_OUT_PHASE_SHIFTED;

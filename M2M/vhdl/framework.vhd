@@ -184,6 +184,7 @@ port (
    qnice_dvi_i             : in    std_logic;
    qnice_video_mode_i      : in    video_mode_type;
    qnice_osm_cfg_scaling_i : in    std_logic_vector(8 downto 0);
+   qnice_vga_enable_i      : in    std_logic;
    qnice_retro15kHz_i      : in    std_logic;
    qnice_scandoubler_i     : in    std_logic;
    qnice_csync_i           : in    std_logic;
@@ -894,6 +895,7 @@ begin
          qnice_osm_cfg_xy_i      => qnice_osm_cfg_xy,
          qnice_osm_cfg_dxdy_i    => qnice_osm_cfg_dxdy,
          qnice_osm_cfg_enable_i  => qnice_osm_cfg_enable,
+         qnice_vga_enable_i      => qnice_vga_enable_i,
          qnice_retro15kHz_i      => qnice_retro15kHz_i,
          qnice_scandoubler_i     => qnice_scandoubler_i,
          qnice_csync_i           => qnice_csync_i,

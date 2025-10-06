@@ -54,6 +54,7 @@ entity av_pipeline is
       qnice_osm_cfg_xy_i      : in  std_logic_vector(15 downto 0);
       qnice_osm_cfg_dxdy_i    : in  std_logic_vector(15 downto 0);
       qnice_osm_cfg_enable_i  : in  std_logic;
+      qnice_vga_enable_i      : in  std_logic;
       qnice_retro15kHz_i      : in  std_logic;
       qnice_scandoubler_i     : in  std_logic;
       qnice_csync_i           : in  std_logic;
@@ -153,6 +154,7 @@ signal audio_mute             : std_logic;
 ---------------------------------------------------------------------------------------------
 -- video_clk
 ---------------------------------------------------------------------------------------------
+signal vga_enable             : std_logic;
 signal video_retro15kHz       : std_logic;
 signal video_scandoubler      : std_logic;
 signal video_csync            : std_logic;
@@ -271,7 +273,7 @@ begin
    -- Clock domain crossing: QNICE to VIDEO
    i_qnice2video: xpm_cdc_array_single
       generic map (
-         WIDTH => 46
+         WIDTH => 47
       )
       port map (
          src_clk                => qnice_clk_i,
@@ -283,6 +285,7 @@ begin
          src_in(35)             => qnice_csync_i,
          src_in(36)             => qnice_zoom_crop_i,
          src_in(45 downto 37)   => qnice_osm_cfg_scaling_i,
+         src_in(46)             => qnice_vga_enable_i,
          dest_clk               => video_clk_i,
          dest_out(15 downto 0)  => video_osm_cfg_xy,
          dest_out(31 downto 16) => video_osm_cfg_dxdy,
@@ -291,7 +294,8 @@ begin
          dest_out(34)           => video_scandoubler,
          dest_out(35)           => video_csync,
          dest_out(36)           => video_zoom_crop,
-         dest_out(45 downto 37) => video_osm_cfg_scaling
+         dest_out(45 downto 37) => video_osm_cfg_scaling,
+         dest_out(46)           => vga_enable
       ); -- i_qnice2video
 
    -- Clock domain crossing: QNICE to AUDIO
@@ -422,6 +426,8 @@ begin
 
          -- Configure 15 kHz mode: 0 =off/1=on
          video_retro15kHz_i      => video_retro15kHz,
+         
+         vga_enable_i            => vga_enable,
 
          -- Analog output (VGA and audio jack)
          vga_red_o               => vga_red,
