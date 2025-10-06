@@ -1,76 +1,61 @@
-MiSTer2MEGA65
-=============
+Mr Do! For the Mega65
+=====================
 
-MiSTer2MEGA65 is a framework to simplify porting MiSTer cores to the MEGA65.
+Released by Universal in 1982, Mr. Do! is a fast-paced maze chase game that blends the strategic depth of Dig Dug with the kinetic urgency of Pac-Man.
 
-![Title Image](doc/wiki/assets/MiSTer2MEGA65-Title.png)
+You play as a circus clown armed with a bouncing power ball, tunneling through dirt to collect cherries while evading relentless enemies. The game rewards both tactical play and improvisation; whether you're carving escape routes or triggering chain reactions with falling apples.
 
-Learn more by
-[watching this YouTube video](https://youtu.be/9Ib7z64z9N4)
-and get started by reading the
-[MiSTer2MEGA65 Wiki](https://github.com/sy2002/MiSTer2MEGA65/wiki).
+Due to rotated framebuffer constraints and the unique video characteristics of Mr. Do!, analog video output is disabled in rotated mode to preserve HDMI clarity and prevent CRT distortion. For purists, native orientation playback remains fully supported with proper analog sync. Although analog output via VGA was initially explored by adjusting timing parameters, workaround for the lower pixel clock required for CRT compatibility meant introduced acute horizontal stretching, making the compromise unacceptable for general use.
 
-TL;DR
------
+This core is based on the
+[MiSTer](https://github.com/MiSTer-devel/Arcade-MrDo_MiSTer)
+Mr Do! core which itself is based on the work of [Darren Olafson] and many others (AUTHORS).
 
-1. Scroll up and press the "Use this template" button to start a new
-   MiSTer2MEGA65 project. Then fork the MiSTer core you want to port
-   and make it a Git submodule of your newly created project.
+[Muse aka sho3string](https://github.com/sho3string)
+ported the core to the MEGA65 in 2025.
 
-2. Wrap the MiSTer core inside `CORE/vhdl/main.vhd` while
-   adjusting the clocks in `CORE/vhdl/clk.vhd`. Provide RAMs, ROMs and other
-   devices in `CORE/vhdl/mega65.vhd` and wire everything correctly.
+The core uses the [MiSTer2MEGA65](https://github.com/sy2002/MiSTer2MEGA65)
+framework and [QNICE-FPGA](https://github.com/sy2002/QNICE-FPGA) for
+FAT32 support (loading ROMs, mounting disks) and for the
+on-screen-menu.
 
-3. Configure your core's behavior, including how the start screen looks like,
-   what ROMs should be loaded (and where to), the abilities of the
-   <kbd>Help</kbd> menu and more in `CORE/vhdl/config.vhd` and in
-   `CORE/vhdl/globals.vhd`.
+How to install Mr Do! MEGA65
+----------------------------
 
-**DONE** your core is ported to MEGA65! :-)
+Download from here - [Download link #1](https://files.mega65.org?id=b115db76-d9a9-4a93-b751-da34c80cfe1c)
 
-*Obviously, this is a shameless exaggeration of how easy it is to work with
-MiSTer2MEGA65, but you get the gist of it.*
+See [this site](https://sy2002.github.io/m65cores/) to understand how to install and run the core on your MEGA65.  
 
-Getting started, detailed documentation and support
----------------------------------------------------
+This core supports R3 and R6 revision boards, the zip file contains the approproiate .bit and .cor files for these revisions.  
 
-* Please visit our official
-  [MiSTer2MEGA65 Wiki](https://github.com/sy2002/MiSTer2MEGA65/wiki). It
-  contains everything you ever wanted to know about M2M, including a
-  "Getting Started" tutorial and a step-by-step guide to port a MiSTer core.
-  You might whant to start your journey
-  [here](https://github.com/sy2002/MiSTer2MEGA65/wiki/1.-What-is-MiSTer2MEGA65)
-  and then follow the reading track that is pointed out in the
-  respective chapters.
+Download ROM: Download the MAME ROM ZIP file ( mrdo.zip [Universal] )  
 
-* Post a question in our
-  [Discussion Forum](https://github.com/sy2002/MiSTer2MEGA65/discussions).
+Extract the zip file to arcade/mrdo and move this to your MEGA65 SD card: You may either use the bottom SD card tray of the MEGA65 or the tray at the backside of the computer (the latter has precedence over the first).  
 
-Status of the framework
------------------------
+Note: Only the following files are required  
+arcade/mrdo/a4-01.bin  - 8192 bytes  
+arcade/mrdo/c4-02.bin  - 8192 bytes  
+arcade/mrdo/e4-03.bin  - 8192 bytes  
+arcade/mrdo/f4-04.bin  - 8192 bytes  
+arcade/mrdo/s8-09.bin  - 4096 bytes  
+arcade/mrdo/u8-10.bin  - 4096 bytes  
+arcade/mrdo/r8-08.bin  - 4096 bytes  
+arcade/mrdo/n8-07.bin  - 4096 bytes  
+arcade/mrdo/h5-05.bin  - 4096 bytes  
+arcade/mrdo/k5-06.bin  - 4096 bytes  
+arcade/mrdo/u02--2.bin - 32 bytes  
+arcade/mrdo/t02--3.bin - 32 bytes  
+arcade/mrdo/f10--1.bin - 32 bytes  
 
-**The MiSTer2MEGA (M2M) framework is stable and ready for being used.**
-The first production quality core that is based on M2M is the
-[Commodore 64 for MEGA65](https://github.com/MJoergen/C64MEGA65).
-Additionally there is already
-[a decent amount of cores](https://sy2002.github.io/m65cores/)
-that are based on the M2M framework. Head to the
-[Alternate MEGA65 cores](https://sy2002.github.io/m65cores/)
-website to learn more.
+Default DIP switch positions:  
 
-The documentation of the M2M framework needs quite some more work before
-we will be able to call it "good enough" - let alone complete:
-[MiSTer2MEGA65 Wiki](https://github.com/sy2002/MiSTer2MEGA65/wiki)
+![image](https://github.com/user-attachments/assets/c6a6c209-7fd7-4bbf-94f4-acfa8dafc7fb)
+ 
+The above DIP configurations are the defaults used in the MEGA65 Core, so there is no need to configure these for the first time to start playing
 
-This should not discourage you from using the MiSTer2MEGA65 framework right
-now to port MiSTer cores and other cores to the MEGA65. You can use the
-source code of the
-[Commodore 64 for MEGA65](https://github.com/MJoergen/C64MEGA65)
-as your "user's manual" and "reference handbook" for the M2M framework.
+For a description of DIPs see the following page.  
 
-Additionally to helping yourself with the Wiki (and the turorials there) and
-the C64 source code as your "user's manual" and "reference handbook": Post
-your question in the
-[Discussion Forum](https://github.com/sy2002/MiSTer2MEGA65/discussions)
-and join the
-[friendly MEGA65 community on Discord](https://discord.com/channels/719326990221574164/1177364456896999485).
+https://www.arcade-museum.com/dipswitch-settings/mr-do
+
+
+
