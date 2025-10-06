@@ -76,17 +76,19 @@ module main #(
     localparam C_MENU_FLIP     = 9;
 
     // Keyboard mappings
-    localparam m65_1        = 56;
-    localparam m65_2        = 59;
-    localparam m65_5        = 16;
-    localparam m65_6        = 19;
-    localparam m65_a        = 10;
-    localparam m65_d        = 18;
-    localparam m65_up_crsr  = 73;
-    localparam m65_p        = 41;
-    localparam m65_s        = 13;
-    localparam m65_capslock = 72;
-    localparam m65_help     = 67;
+    localparam m65_1            = 56;
+    localparam m65_2            = 59;
+    localparam m65_5            = 16;
+    localparam m65_6            = 19;
+    localparam m65_p            = 41;
+    localparam m65_capslock     = 72;
+    localparam m65_help         = 67;
+    localparam m65_mega         = 61;
+    localparam m65_up_crsr      = 73;
+    localparam m65_vert_crsr    = 7;   // means cursor down in C64 terminology
+    localparam m65_left_crsr    = 74;
+    localparam m65_horz_crsr    = 2;   // means cursor right in C64 terminology
+    
 
     // Internal signals
     wire [79:0] keyboard_n;
@@ -178,17 +180,17 @@ module main #(
         end
     end
 
-    wire b_up      = ~joy_1_up_n_i;
-    wire b_down    = ~joy_1_down_n_i;
-    wire b_left    = ~joy_1_left_n_i;
-    wire b_right   = ~joy_1_right_n_i;
-    wire b_fire    = ~joy_1_fire_n_i;
+    wire b_up      = joy_1_up_n_i   && keyboard_n[m65_up_crsr];
+    wire b_down    = joy_1_down_n_i && keyboard_n[m65_vert_crsr];
+    wire b_left    = joy_1_left_n_i && keyboard_n[m65_left_crsr];
+    wire b_right   = joy_1_right_n_i&& keyboard_n[m65_horz_crsr];
+    wire b_fire    = joy_1_fire_n_i && keyboard_n[m65_mega];
    
-    wire b_up_2    = ~joy_2_up_n_i;
-    wire b_down_2  = ~joy_2_down_n_i;
-    wire b_left_2  = ~joy_2_left_n_i;
-    wire b_right_2 = ~joy_2_right_n_i;
-    wire b_fire_2  = ~joy_2_fire_n_i;
+    wire b_up_2    = joy_2_up_n_i   && keyboard_n[m65_up_crsr];
+    wire b_down_2  = joy_2_down_n_i && keyboard_n[m65_vert_crsr];
+    wire b_left_2  = joy_2_left_n_i && keyboard_n[m65_left_crsr];
+    wire b_right_2 = joy_2_right_n_i&& keyboard_n[m65_horz_crsr];
+    wire b_fire_2  = joy_2_fire_n_i && keyboard_n[m65_mega];
     
     wire b_start1  = ~keyboard_n[m65_1];
     wire b_start2  = ~keyboard_n[m65_2];
@@ -220,8 +222,8 @@ module main #(
     reg user_flip;
     
     always @ (posedge clk_4M ) begin
-        p1 <= ~{ 1'b0, b_start2, b_start1, b_fire, b_up, b_right, b_down, b_left };
-        p2 <= ~{ b_coin, 1'b0, 1'b0, b_fire_2, b_up_2, b_right_2, b_down_2, b_left_2 };
+        p1 <= ~{ 1'b0, b_start2, b_start1, ~b_fire, ~b_up, ~b_right, ~b_down, ~b_left };
+        p2 <= ~{ b_coin, 1'b0, 1'b0, ~b_fire_2, ~b_up_2, ~b_right_2, ~b_down_2, ~b_left_2 };
         
         dsw1 <= ~dsw_a_i;
         dsw2 <= ~dsw_b_i;
